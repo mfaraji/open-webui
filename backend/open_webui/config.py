@@ -840,6 +840,16 @@ GOOGLE_DRIVE_CLIENT_ID = os.getenv('GOOGLE_DRIVE_CLIENT_ID', '')
 
 GOOGLE_DRIVE_API_KEY = os.getenv('GOOGLE_DRIVE_API_KEY', '')
 
+# Server-side Google Drive attachment integration. The URL and shared secret
+# never leave the backend; only the enabled boolean is exposed to the browser.
+ENABLE_WORKSPACE_MCP_GATEWAY_DRIVE = (
+    os.getenv('ENABLE_WORKSPACE_MCP_GATEWAY_DRIVE', 'False').lower() == 'true'
+)
+WORKSPACE_MCP_GATEWAY_URL = os.getenv(
+    'WORKSPACE_MCP_GATEWAY_URL', 'http://127.0.0.1:8000'
+).rstrip('/')
+WORKSPACE_MCP_GATEWAY_SHARED_SECRET = os.getenv('WORKSPACE_MCP_GATEWAY_SHARED_SECRET', '')
+
 ENABLE_ONEDRIVE_INTEGRATION = os.getenv('ENABLE_ONEDRIVE_INTEGRATION', 'False').lower() == 'true'
 
 

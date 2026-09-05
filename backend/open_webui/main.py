@@ -51,6 +51,7 @@ from open_webui.config import (
     # Admin
     ENABLE_ADMIN_CHAT_ACCESS,
     ENABLE_ADMIN_EXPORT,
+    ENABLE_WORKSPACE_MCP_GATEWAY_DRIVE,
     ENABLE_ONEDRIVE_BUSINESS,
     ENABLE_ONEDRIVE_PERSONAL,
     # OpenAI
@@ -174,6 +175,7 @@ from open_webui.routers import (
     tools,
     users,
     utils,
+    workspace_google_drive,
 )
 from open_webui.routers.retrieval import (
     get_ef,
@@ -858,6 +860,11 @@ app.include_router(utils.router, prefix='/api/v1/utils', tags=['utils'])
 app.include_router(terminals.router, prefix='/api/v1/terminals', tags=['terminals'])
 app.include_router(automations.router, prefix='/api/v1/automations', tags=['automations'])
 app.include_router(calendar.router, prefix='/api/v1/calendars', tags=['calendars'])
+app.include_router(
+    workspace_google_drive.router,
+    prefix='/api/v1/integrations/google-drive',
+    tags=['integrations'],
+)
 
 # SCIM 2.0 API for identity management
 if ENABLE_SCIM:
@@ -2341,6 +2348,7 @@ async def get_app_config(request: Request):
                     'enable_admin_chat_access': ENABLE_ADMIN_CHAT_ACCESS,
                     'enable_admin_analytics': ENABLE_ADMIN_ANALYTICS,
                     'enable_google_drive_integration': config.get('google_drive.enable'),
+                    'enable_workspace_google_drive_integration': ENABLE_WORKSPACE_MCP_GATEWAY_DRIVE,
                     'enable_onedrive_integration': config.get('onedrive.enable'),
                     'enable_memories': config.get('memories.enable'),
                     **(

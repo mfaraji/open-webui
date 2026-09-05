@@ -342,6 +342,7 @@ type Config = {
 		enable_web_search_confirmation?: boolean;
 		web_search_confirmation_content?: string;
 		enable_google_drive_integration: boolean;
+		enable_workspace_google_drive_integration?: boolean;
 		enable_onedrive_integration: boolean;
 		enable_image_generation: boolean;
 		enable_admin_export: boolean;

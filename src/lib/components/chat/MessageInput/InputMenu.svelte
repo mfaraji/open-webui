@@ -5,8 +5,6 @@
 	import { config, user, tools as _tools, mobile, knowledge } from '$lib/stores';
 	import { getKnowledgeBases } from '$lib/apis/knowledge';
 
-	import { createPicker } from '$lib/utils/google-drive-picker';
-
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import DropdownMenu from '$lib/components/common/DropdownMenu.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -26,6 +24,7 @@
 	import Notes from './InputMenu/Notes.svelte';
 	import Knowledge from './InputMenu/Knowledge.svelte';
 	import AttachWebpageModal from './AttachWebpageModal.svelte';
+	import GoogleDriveModal from './GoogleDriveModal.svelte';
 	import GlobeAlt from '$lib/components/icons/GlobeAlt.svelte';
 
 	const i18n = getContext('i18n');
@@ -51,6 +50,7 @@
 	let tab = '';
 
 	let showAttachWebpageModal = false;
+	let showGoogleDriveModal = false;
 	const toolApprovalModes = [
 		{
 			value: 'full',
@@ -110,6 +110,17 @@
 	bind:show={showAttachWebpageModal}
 	onSubmit={(e) => {
 		onUpload(e);
+	}}
+/>
+
+<GoogleDriveModal
+	bind:show={showGoogleDriveModal}
+	maxSelections={$config?.file?.max_count == null
+		? 100
+		: Math.max(0, $config.file.max_count - files.length)}
+	maxSizeBytes={$config?.file?.max_size == null ? null : $config.file.max_size * 1024 * 1024}
+	onFiles={async (selectedFiles) => {
+		await inputFilesHandler(selectedFiles);
 	}}
 />
 
@@ -391,12 +402,16 @@
 					</Tooltip>
 
 					{#if fileUploadEnabled}
-						{#if $config?.features?.enable_google_drive_integration}
+						{#if $config?.features?.enable_workspace_google_drive_integration || $config?.features?.enable_google_drive_integration}
 							<button
 								class="flex w-full gap-2 items-center h-[1.6875rem] px-2 text-[0.8125rem] font-normal select-none cursor-pointer hover:bg-gray-50/40 dark:hover:bg-gray-800/40 rounded-xl"
 								type="button"
 								on:click={() => {
-									uploadGoogleDriveHandler();
+									if ($config?.features?.enable_workspace_google_drive_integration) {
+										showGoogleDriveModal = true;
+									} else {
+										uploadGoogleDriveHandler();
+									}
 									show = false;
 								}}
 							>
