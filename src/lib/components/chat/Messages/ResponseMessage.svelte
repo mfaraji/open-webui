@@ -23,6 +23,7 @@
 		TTSWorker,
 		user
 	} from '$lib/stores';
+	import { contentDirection } from '$lib/i18n/locale';
 	import { synthesizeOpenAISpeech } from '$lib/apis/audio';
 	import { imageGenerations } from '$lib/apis/images';
 	import {
@@ -659,7 +660,7 @@
 	<div
 		class=" flex w-full message-{message.id}"
 		id="message-{message.id}"
-		dir={$settings.chatDirection}
+		dir={contentDirection($settings.chatDirection)}
 		style="scroll-margin-top: 3rem;"
 	>
 		<div class={`shrink-0 ltr:mr-2 rtl:ml-2 hidden @lg:flex mt-0.5 `}>
@@ -690,7 +691,7 @@
 						{#if message?.files && message.files?.filter( (f) => ['image', 'file'].includes(f.type) ).length > 0}
 							<div
 								class="my-1 w-full flex overflow-x-auto gap-2 flex-wrap"
-								dir={$settings?.chatDirection ?? 'auto'}
+								dir={contentDirection($settings?.chatDirection)}
 							>
 								{#each message.files.filter((f) => ['image', 'file'].includes(f.type)) as file}
 									<div>

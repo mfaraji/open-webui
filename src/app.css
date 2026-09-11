@@ -9,18 +9,120 @@
 @font-face {
 	font-family: 'Vazirmatn';
 	src: url('/assets/fonts/Vazirmatn-Variable.ttf');
+	font-weight: 100 900;
 	font-display: swap;
 }
 
 /* --app-text-scale is updated via the UI Scale slider (Interface.svelte) */
 :root {
 	--app-text-scale: 1;
+	--ashpazi-canvas: #fcfaf7;
+	--ashpazi-surface: #ffffff;
+	--ashpazi-elevated: #f6f1ea;
+	--ashpazi-border: #ded5c9;
+	--ashpazi-text: #211d19;
+	--ashpazi-muted: #6f6257;
+	--ashpazi-primary: #a6333d;
+	--ashpazi-primary-hover: #872730;
+	--ashpazi-focus: #a6333d;
+	--ashpazi-warning: #8c5500;
+	--ashpazi-danger: #b42318;
+
+	/* Upstream gray utilities intentionally resolve to this warm neutral scale. */
+	--color-gray-50: #fcfaf7;
+	--color-gray-100: #f6f1ea;
+	--color-gray-200: #ded5c9;
+	--color-gray-300: #c7bbae;
+	--color-gray-400: #9b8e82;
+	--color-gray-500: #6f6257;
+	--color-gray-600: #564b42;
+	--color-gray-700: #3b342e;
+	--color-gray-800: #2a2420;
+	--color-gray-850: #211d19;
+	--color-gray-900: #211d19;
+	--color-gray-950: #171411;
+}
+
+.dark {
+	--ashpazi-canvas: #171411;
+	--ashpazi-surface: #211d19;
+	--ashpazi-elevated: #2a2420;
+	--ashpazi-border: #40372f;
+	--ashpazi-text: #f7f1e8;
+	--ashpazi-muted: #b7aa9c;
+	--ashpazi-focus: #e2737c;
+	--ashpazi-warning: #e7a52e;
+	--color-gray-50: #302923;
+	--color-gray-100: #40372f;
+	--color-gray-200: #51473e;
+	--color-gray-300: #76695d;
+	--color-gray-400: #96897d;
+	--color-gray-500: #b7aa9c;
+	--color-gray-600: #d2c7bb;
+	--color-gray-700: #e3dad0;
+	--color-gray-800: #2a2420;
+	--color-gray-850: #211d19;
+	--color-gray-900: #211d19;
+	--color-gray-950: #171411;
+}
+
+.dark[data-theme='oled'] {
+	--ashpazi-canvas: #000;
+	--ashpazi-surface: #0c0a09;
+	--ashpazi-elevated: #171310;
+	--ashpazi-border: #302923;
+	--color-gray-800: #171310;
+	--color-gray-850: #0c0a09;
+	--color-gray-900: #0c0a09;
+	--color-gray-950: #000;
 }
 
 html {
 	word-break: break-word;
 	/* font-size scales the entire document via the same UI control */
 	font-size: calc(1rem * var(--app-text-scale, 1));
+}
+
+html:lang(fa) body,
+html:lang(fa) button,
+html:lang(fa) input,
+html:lang(fa) textarea,
+html:lang(fa) select {
+	font-family: var(--app-font-family, 'Vazirmatn'), 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+	line-height: 1.8;
+}
+
+html:lang(fa) h1,
+html:lang(fa) h2,
+html:lang(fa) h3,
+html:lang(fa) h4,
+html:lang(fa) h5,
+html:lang(fa) h6 {
+	font-weight: 650;
+	line-height: 1.55;
+}
+
+code,
+pre,
+kbd,
+.font-mono,
+[data-technical-value] {
+	direction: ltr;
+	unicode-bidi: isolate;
+}
+
+[dir='rtl'] .rtl-mirror,
+[dir='rtl'] [data-directional-icon] {
+	transform: scaleX(-1);
+}
+
+/* Logical helpers for Ashpazi additions and isolated upstream extension points. */
+.ashpazi-start-auto {
+	margin-inline-start: auto;
+}
+
+.ashpazi-end-auto {
+	margin-inline-end: auto;
 }
 
 #sidebar-chat-item {

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 	<head>
 		<meta charset="utf-8" />
 		<!-- LICENSE covers this Open WebUI branding surface, including name, logo,
@@ -32,11 +32,25 @@
 			name="viewport"
 			content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
 		/>
-		<meta name="theme-color" content="#171717" />
+		<meta name="theme-color" content="#FCFAF7" />
 		<meta name="robots" content="noindex,nofollow" />
 
 		<script src="/static/loader.js" defer crossorigin="use-credentials"></script>
 		<link rel="stylesheet" href="/static/custom.css" crossorigin="use-credentials" />
+
+		<script>
+			// Avoid an LTR or fallback-font flash before Svelte and i18next initialize.
+			(() => {
+				const queryLocale = new URLSearchParams(window.location.search).get('lang');
+				const savedLocale = localStorage.getItem('locale');
+				const browserLocale = (navigator.languages && navigator.languages[0]) || navigator.language;
+				const locale = queryLocale || savedLocale || browserLocale || 'en-US';
+				const language = locale.toLowerCase().split('-')[0];
+				const rtlLanguages = ['ar', 'fa', 'he', 'ku', 'ps', 'sd', 'ug', 'ur', 'yi'];
+				document.documentElement.lang = locale;
+				document.documentElement.dir = rtlLanguages.includes(language) ? 'rtl' : 'ltr';
+			})();
+		</script>
 
 		<script>
 			function resizeIframe(obj) {
@@ -56,23 +70,23 @@
 
 				if (localStorage.theme === 'system') {
 					document.documentElement.classList.add(prefersDarkTheme ? 'dark' : 'light');
-					metaThemeColorTag.setAttribute('content', prefersDarkTheme ? '#171717' : '#ffffff');
+					document.documentElement.dataset.theme = prefersDarkTheme ? 'dark' : 'light';
+					metaThemeColorTag.setAttribute('content', prefersDarkTheme ? '#171411' : '#FCFAF7');
 				} else if (localStorage.theme === 'oled-dark') {
-					document.documentElement.style.setProperty('--color-gray-800', '#101010');
-					document.documentElement.style.setProperty('--color-gray-850', '#050505');
-					document.documentElement.style.setProperty('--color-gray-900', '#000000');
-					document.documentElement.style.setProperty('--color-gray-950', '#000000');
 					document.documentElement.classList.add('dark');
+					document.documentElement.dataset.theme = 'oled';
 					metaThemeColorTag.setAttribute('content', '#000000');
 				} else if (localStorage.theme === 'light') {
 					document.documentElement.classList.add('light');
-					metaThemeColorTag.setAttribute('content', '#ffffff');
+					document.documentElement.dataset.theme = 'light';
+					metaThemeColorTag.setAttribute('content', '#FCFAF7');
 				} else if (localStorage.theme === 'her') {
 					document.documentElement.classList.add('her');
 					metaThemeColorTag.setAttribute('content', '#983724');
 				} else {
 					document.documentElement.classList.add('dark');
-					metaThemeColorTag.setAttribute('content', '#171717');
+					document.documentElement.dataset.theme = 'dark';
+					metaThemeColorTag.setAttribute('content', '#171411');
 				}
 
 				// LICENSE covers these Open WebUI splash logo assets.
@@ -93,11 +107,13 @@
 						if (e.matches) {
 							document.documentElement.classList.add('dark');
 							document.documentElement.classList.remove('light');
-							metaThemeColorTag.setAttribute('content', '#171717');
+							document.documentElement.dataset.theme = 'dark';
+							metaThemeColorTag.setAttribute('content', '#171411');
 						} else {
 							document.documentElement.classList.add('light');
 							document.documentElement.classList.remove('dark');
-							metaThemeColorTag.setAttribute('content', '#ffffff');
+							document.documentElement.dataset.theme = 'light';
+							metaThemeColorTag.setAttribute('content', '#FCFAF7');
 						}
 					}
 				});

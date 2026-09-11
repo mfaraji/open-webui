@@ -4,6 +4,8 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import type { i18n as i18nType } from 'i18next';
 import { writable } from 'svelte/store';
 
+import { applyDocumentLocale } from './locale';
+
 const createI18nStore = (i18n: i18nType) => {
 	const i18nWritable = writable(i18n);
 
@@ -16,9 +18,7 @@ const createI18nStore = (i18n: i18nType) => {
 	i18n.on('added', () => i18nWritable.set(i18n));
 	i18n.on('languageChanged', (lang) => {
 		i18nWritable.set(i18n);
-		if (typeof document !== 'undefined') {
-			document.documentElement.setAttribute('lang', lang);
-		}
+		applyDocumentLocale(lang);
 	});
 	return i18nWritable;
 };
@@ -40,11 +40,7 @@ const createIsLoadingStore = (i18n: i18nType) => {
 	return isLoading;
 };
 
-export const initI18n = (defaultLocale?: string | undefined) => {
-	const detectionOrder = defaultLocale
-		? ['querystring', 'localStorage']
-		: ['querystring', 'localStorage', 'navigator'];
-	const fallbackDefaultLocale = defaultLocale ? [defaultLocale] : ['en-US'];
+export const initI18n = (locale = 'en-US') => {
 
 	const loadResource = (language: string, namespace: string) =>
 		import(`./locales/${language}/${namespace}.json`);
@@ -54,15 +50,16 @@ export const initI18n = (defaultLocale?: string | undefined) => {
 		.use(LanguageDetector)
 		.init({
 			debug: false,
+			lng: locale,
 			detection: {
-				order: detectionOrder,
+				order: ['querystring', 'localStorage', 'navigator'],
 				caches: ['localStorage'],
 				lookupQuerystring: 'lang',
 				lookupLocalStorage: 'locale'
 			},
 			fallbackLng: {
 				fr: ['fr-FR'],
-				default: fallbackDefaultLocale
+				default: ['en-US']
 			},
 			ns: 'translation',
 			keySeparator: false,
@@ -82,7 +79,7 @@ export const getLanguages = async () => {
 	return languages;
 };
 export const changeLanguage = (lang: string) => {
-	document.documentElement.setAttribute('lang', lang);
+	applyDocumentLocale(lang);
 	i18next.changeLanguage(lang);
 };
 

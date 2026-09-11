@@ -40,6 +40,7 @@
 		TTSWorker,
 		temporaryChatEnabled
 	} from '$lib/stores';
+	import { contentDirection } from '$lib/i18n/locale';
 
 	import {
 		convertHeicToJpeg,
@@ -1862,7 +1863,7 @@
 							false)
 								? 'focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-blue-500 [&_.ProseMirror:focus-visible]:outline-none!'
 								: ''}  transition px-0.5 bg-white/5 dark:bg-gray-500/5 backdrop-blur-sm dark:text-gray-100"
-							dir={$settings?.chatDirection ?? 'auto'}
+							dir={contentDirection($settings?.chatDirection)}
 						>
 							{#if atSelectedModel !== undefined}
 								<div class="px-2.5 pt-2.5 text-left w-full flex flex-col z-10">
@@ -1894,7 +1895,7 @@
 							{#if files.length > 0}
 								<div
 									class="mx-2 mt-2 pb-1 flex items-center flex-wrap gap-1.5"
-									dir={$settings?.chatDirection ?? 'auto'}
+									dir={contentDirection($settings?.chatDirection)}
 								>
 									{#each files as file, fileIdx}
 										{#if file.type === 'image' || (file?.content_type ?? '').startsWith('image/')}

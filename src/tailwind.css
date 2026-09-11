@@ -22,6 +22,19 @@
 	--color-gray-850: oklch(0.27 0 0);
 	--color-gray-900: oklch(0.2 0 0);
 	--color-gray-950: oklch(0.16 0 0);
+
+	/* Semantic aliases are stable Ashpazi surfaces; gray aliases stay for upstream utilities. */
+	--color-canvas: var(--ashpazi-canvas);
+	--color-surface: var(--ashpazi-surface);
+	--color-elevated: var(--ashpazi-elevated);
+	--color-border: var(--ashpazi-border);
+	--color-content: var(--ashpazi-text);
+	--color-muted: var(--ashpazi-muted);
+	--color-primary: var(--ashpazi-primary);
+	--color-primary-hover: var(--ashpazi-primary-hover);
+	--color-focus: var(--ashpazi-focus);
+	--color-warning: var(--ashpazi-warning);
+	--color-danger: var(--ashpazi-danger);
 }
 
 /*
@@ -47,6 +60,10 @@
 		font-family: var(--font-sans);
 	}
 
+	html:lang(fa) {
+		font-family: var(--app-font-family, 'Vazirmatn'), 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+	}
+
 	pre {
 		font-family:
 			-apple-system, BlinkMacSystemFont, 'Inter', 'Vazirmatn', ui-sans-serif, system-ui, 'Segoe UI',
@@ -68,14 +85,14 @@
 	}
 
 	input[type='checkbox'] {
-		@apply appearance-none size-3.5 align-middle bg-white border border-gray-300 rounded transition cursor-pointer focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-600 self-center;
+		@apply appearance-none size-3.5 align-middle bg-white border border-gray-300 rounded transition cursor-pointer focus:ring-2 focus:ring-[--color-focus] focus:outline-none dark:bg-gray-800 dark:border-gray-600 self-center;
 		/* Center the custom mark */
 		display: inline-block;
 		position: relative;
 	}
 
 	input[type='checkbox']:checked {
-		@apply bg-blue-600 border-blue-600;
+		@apply bg-[--color-primary] border-[--color-primary];
 	}
 
 	input[type='checkbox']:after {

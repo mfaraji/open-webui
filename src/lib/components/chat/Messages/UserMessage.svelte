@@ -3,6 +3,7 @@
 	import { tick, getContext, onMount } from 'svelte';
 
 	import { models, settings } from '$lib/stores';
+	import { contentDirection } from '$lib/i18n/locale';
 	import { user as _user } from '$lib/stores';
 	import {
 		copyToClipboard as _copyToClipboard,
@@ -131,7 +132,7 @@
 
 <div
 	class=" flex w-full user-message group"
-	dir={$settings.chatDirection}
+	dir={contentDirection($settings.chatDirection)}
 	id="message-{message.id}"
 	style="scroll-margin-top: 3rem;"
 >
@@ -175,7 +176,7 @@
 				{#if message.files}
 					<div
 						class="mb-1 w-full flex flex-col justify-end overflow-x-auto gap-1 flex-wrap"
-						dir={$settings?.chatDirection ?? 'auto'}
+						dir={contentDirection($settings?.chatDirection)}
 					>
 						{#each message.files as file}
 							{@const fileUrl =
@@ -370,7 +371,7 @@
 					{#if timerExpanded}
 						<div
 							class="mt-2 ml-3 whitespace-pre-wrap break-words border-l border-gray-100 pl-3 text-[0.78125rem] leading-relaxed text-gray-600 dark:border-white/10 dark:text-gray-400"
-							dir={$settings?.chatDirection ?? 'auto'}
+							dir={contentDirection($settings?.chatDirection)}
 						>
 							{message.content}
 						</div>
@@ -401,7 +402,7 @@
 								{:else}
 									<div
 										class="whitespace-pre-wrap text-[0.9375rem]"
-										dir={$settings?.chatDirection ?? 'auto'}
+										dir={contentDirection($settings?.chatDirection)}
 									>
 										{message.content}
 									</div>
