@@ -36,6 +36,7 @@ from open_webui.env import (
     ENABLE_FORWARD_USER_INFO_HEADERS,
     ENABLE_PLUGINS,
     FORWARD_SESSION_INFO_HEADER_CHAT_ID,
+    FORWARD_SESSION_INFO_HEADER_AUTOMATION_ID,
     FORWARD_SESSION_INFO_HEADER_MESSAGE_ID,
     REDIS_KEY_PREFIX,
 )
@@ -182,6 +183,8 @@ async def build_tool_server_headers(
             headers[FORWARD_SESSION_INFO_HEADER_CHAT_ID] = metadata['chat_id']
         if metadata.get('message_id'):
             headers[FORWARD_SESSION_INFO_HEADER_MESSAGE_ID] = metadata['message_id']
+        if metadata.get('automation_id'):
+            headers[FORWARD_SESSION_INFO_HEADER_AUTOMATION_ID] = metadata['automation_id']
 
     return headers, cookies
 

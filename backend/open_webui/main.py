@@ -52,6 +52,7 @@ from open_webui.config import (
     ENABLE_ADMIN_CHAT_ACCESS,
     ENABLE_ADMIN_EXPORT,
     ENABLE_WORKSPACE_MCP_GATEWAY_DRIVE,
+    ENABLE_WORKSPACE_MCP_GATEWAY_TELEGRAM,
     ENABLE_ONEDRIVE_BUSINESS,
     ENABLE_ONEDRIVE_PERSONAL,
     # OpenAI
@@ -70,6 +71,8 @@ from open_webui.config import (
     THREAD_POOL_THREAD_NAME_PREFIX,
     WEBUI_AUTH,
     WEBUI_NAME,
+    WORKSPACE_MCP_GATEWAY_SHARED_SECRET,
+    WORKSPACE_MCP_GATEWAY_URL,
     async_reset_config,
     import_legacy_config_json,
     seed_registered_defaults,
@@ -176,6 +179,7 @@ from open_webui.routers import (
     users,
     utils,
     workspace_google_drive,
+    workspace_telegram,
 )
 from open_webui.routers.retrieval import (
     get_ef,
@@ -602,9 +606,80 @@ async def initialize_runtime_config(app: FastAPI):
     from open_webui.utils.access_control import migrate_access_control
 
     connections = await Config.get('tool_server.connections', []) or []
+    connections_changed = False
     if any('access_control' in c.get('config', {}) for c in connections):
         for connection in connections:
             migrate_access_control(connection.get('config', {}))
+        connections_changed = True
+
+    telegram_id = 'workspace-mcp-telegram'
+    telegram_connection = next(
+        (
+            connection
+            for connection in connections
+            if (connection.get('info') or {}).get('id') == telegram_id
+        ),
+        None,
+    )
+    if ENABLE_WORKSPACE_MCP_GATEWAY_TELEGRAM and WORKSPACE_MCP_GATEWAY_SHARED_SECRET:
+        managed_values = {
+            'url': f'{WORKSPACE_MCP_GATEWAY_URL}/mcp/telegram',
+            'path': 'openapi.json',
+            'type': 'mcp',
+            'auth_type': 'none',
+            'headers': {'X-Gateway-Auth': WORKSPACE_MCP_GATEWAY_SHARED_SECRET},
+            'key': '',
+            'spec_type': 'url',
+            'spec': '',
+        }
+        managed_info = {
+            'id': telegram_id,
+            'name': 'Telegram Publisher',
+            'description': 'Send messages to your verified Telegram channel aliases.',
+        }
+        default_config = {
+            'enable': True,
+            'function_name_filter_list': '',
+            'access_grants': [
+                {
+                    'principal_type': 'user',
+                    'principal_id': '*',
+                    'permission': 'read',
+                }
+            ],
+        }
+
+        if telegram_connection is None:
+            connections.append(
+                {
+                    **managed_values,
+                    'config': default_config,
+                    'info': managed_info,
+                }
+            )
+            connections_changed = True
+        else:
+            current_config = telegram_connection.get('config') or {}
+            current_info = telegram_connection.get('info') or {}
+            updated_connection = {
+                **telegram_connection,
+                **managed_values,
+                'config': {
+                    **default_config,
+                    **current_config,
+                    'enable': True,
+                },
+                'info': {**current_info, **managed_info},
+            }
+            if updated_connection != telegram_connection:
+                telegram_connection.clear()
+                telegram_connection.update(updated_connection)
+                connections_changed = True
+    elif telegram_connection is not None and (telegram_connection.get('config') or {}).get('enable'):
+        telegram_connection.setdefault('config', {})['enable'] = False
+        connections_changed = True
+
+    if connections_changed:
         await Config.upsert({'tool_server.connections': connections})
 
     for tool_server_connection in connections:
@@ -863,6 +938,11 @@ app.include_router(calendar.router, prefix='/api/v1/calendars', tags=['calendars
 app.include_router(
     workspace_google_drive.router,
     prefix='/api/v1/integrations/google-drive',
+    tags=['integrations'],
+)
+app.include_router(
+    workspace_telegram.router,
+    prefix='/api/v1/integrations/telegram',
     tags=['integrations'],
 )
 
@@ -2349,6 +2429,7 @@ async def get_app_config(request: Request):
                     'enable_admin_analytics': ENABLE_ADMIN_ANALYTICS,
                     'enable_google_drive_integration': config.get('google_drive.enable'),
                     'enable_workspace_google_drive_integration': ENABLE_WORKSPACE_MCP_GATEWAY_DRIVE,
+                    'enable_workspace_telegram_integration': ENABLE_WORKSPACE_MCP_GATEWAY_TELEGRAM,
                     'enable_onedrive_integration': config.get('onedrive.enable'),
                     'enable_memories': config.get('memories.enable'),
                     **(

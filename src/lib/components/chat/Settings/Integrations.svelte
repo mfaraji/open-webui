@@ -7,13 +7,14 @@
 
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	import { settings, toolServers, terminalServers } from '$lib/stores';
+	import { config, settings, toolServers, terminalServers } from '$lib/stores';
 
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Plus from '$lib/components/icons/Plus.svelte';
 	import Connection from './Tools/Connection.svelte';
 	import Terminals from './Integrations/Terminals.svelte';
+	import Telegram from './Integrations/Telegram.svelte';
 	import UserSettingSection from './UserSettingSection.svelte';
 
 	import AddToolServerModal from '$lib/components/AddToolServerModal.svelte';
@@ -106,7 +107,16 @@
 
 	<div class="flex-1 min-h-0 overflow-y-auto scrollbar-hover pr-1.5">
 		{#if servers !== null}
-			<UserSettingSection title={$i18n.t('Tools')} first>
+			{#if $config?.features?.enable_workspace_telegram_integration}
+				<UserSettingSection title={$i18n.t('Telegram')} first>
+					<Telegram />
+				</UserSettingSection>
+			{/if}
+
+			<UserSettingSection
+				title={$i18n.t('Tools')}
+				first={!$config?.features?.enable_workspace_telegram_integration}
+			>
 				<div>
 					<div class="mb-2 flex items-center justify-between">
 						<div class="text-xs text-gray-600 dark:text-gray-400">
