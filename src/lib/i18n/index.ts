@@ -3,6 +3,37 @@ import resourcesToBackend from 'i18next-resources-to-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import type { i18n as i18nType } from 'i18next';
 import { writable } from 'svelte/store';
+import type { I18nOverrides } from '$lib/utils/translationDictionary';
+
+import { assembleSettingsTranslations } from './settings-translations';
+
+let overrides: I18nOverrides = {};
+
+export const loadBundledResource = async (language: string): Promise<Record<string, string>> =>
+	(await import(`./locales/${language}/translation.json`)).default;
+
+const loadResource = async (language: string) =>
+	assembleSettingsTranslations(
+		await loadBundledResource(language),
+		await loadBundledResource('en-US'),
+		overrides[language],
+		overrides['en-US']
+	);
+
+export const updateI18n = async (value: I18nOverrides = {}) => {
+	overrides = value;
+	const resources = await Promise.all(
+		Object.keys(i18next.store?.data ?? {}).map(async (language) => ({
+			language,
+			resource: await loadResource(language)
+		}))
+	);
+	for (const { language, resource } of resources) {
+		i18next.removeResourceBundle(language, 'translation');
+		i18next.addResourceBundle(language, 'translation', resource);
+	}
+	i18n.set(i18next);
+};
 
 import { applyDocumentLocale } from './locale';
 
@@ -40,26 +71,27 @@ const createIsLoadingStore = (i18n: i18nType) => {
 	return isLoading;
 };
 
-export const initI18n = (locale = 'en-US') => {
+export const initI18n = (defaultLocale?: string, value: I18nOverrides = {}) => {
+	overrides = value;
+	const detectionOrder = defaultLocale
+		? ['querystring', 'localStorage']
+		: ['querystring', 'localStorage', 'navigator'];
+	const fallbackDefaultLocale = defaultLocale ? [defaultLocale] : ['en-US'];
 
-	const loadResource = (language: string, namespace: string) =>
-		import(`./locales/${language}/${namespace}.json`);
-
-	i18next
+	return i18next
 		.use(resourcesToBackend(loadResource))
 		.use(LanguageDetector)
 		.init({
 			debug: false,
-			lng: locale,
 			detection: {
-				order: ['querystring', 'localStorage', 'navigator'],
+				order: detectionOrder,
 				caches: ['localStorage'],
 				lookupQuerystring: 'lang',
 				lookupLocalStorage: 'locale'
 			},
 			fallbackLng: {
 				fr: ['fr-FR'],
-				default: ['en-US']
+				default: fallbackDefaultLocale
 			},
 			ns: 'translation',
 			keySeparator: false,
@@ -80,7 +112,7 @@ export const getLanguages = async () => {
 };
 export const changeLanguage = (lang: string) => {
 	applyDocumentLocale(lang);
-	i18next.changeLanguage(lang);
+	return i18next.changeLanguage(lang);
 };
 
 export default i18n;

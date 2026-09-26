@@ -31,6 +31,7 @@
 		channels,
 		channelId,
 		terminalServers,
+		connectedUserTerminals,
 		showControls,
 		showFileNavPath,
 		showFileNavDir,
@@ -63,7 +64,7 @@
 		removeTerminalConnection
 	} from '$lib/utils/connections';
 
-	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
+	import { COMMUNITY_ORIGINS, WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
 	import {
 		cleanText,
 		displayFileHandler,
@@ -311,7 +312,9 @@
 			/\bimport\s+seaborn\b|\bfrom\s+seaborn\b/.test(code) ? 'seaborn' : null,
 			/\bimport\s+sympy\b|\bfrom\s+sympy\b/.test(code) ? 'sympy' : null,
 			/\bimport\s+tiktoken\b|\bfrom\s+tiktoken\b/.test(code) ? 'tiktoken' : null,
-			/\bimport\s+pytz\b|\bfrom\s+pytz\b/.test(code) ? 'pytz' : null
+			/\bimport\s+pytz\b|\bfrom\s+pytz\b/.test(code) ? 'pytz' : null,
+			/\bimport\s+openpyxl\b|\bfrom\s+openpyxl\b/.test(code) ? 'openpyxl' : null,
+			/\.(read|to)_excel\(|\.Excel(Writer|File)\(/.test(code) ? 'openpyxl' : null
 		].filter(Boolean);
 
 		const worker = getOrCreateWorker();
@@ -535,7 +538,7 @@
 			if (data?.name === 'display_file' && params?.path && !inlineDisplayFile) {
 				if (result?.exists !== false) {
 					displayFileHandler(
-						params.path,
+						result?.path ?? params.path,
 						{ showControls, showFileNavPath },
 						{ page: params?.page }
 					);
@@ -557,6 +560,19 @@
 	};
 
 	const chatEventHandler = async (event, cb) => {
+		// Answer this session's availability check even when another chat is active.
+		if (
+			event?.data?.type === 'request:terminal:state' &&
+			event.data.data?.session_id === $socket?.id
+		) {
+			cb?.({
+				connected: [...$connectedUserTerminals.values()].some(
+					(shell) =>
+						shell.terminalId === event.data.data?.terminal_id && shell.chatId === event.chat_id
+				)
+			});
+			return;
+		}
 		const chat = $page.url.pathname.includes(`/c/${event.chat_id}`);
 
 		// Skip events from temporary chats that are not the current chat.
@@ -865,7 +881,9 @@
 				toast.custom(NotificationToast, {
 					componentProps: {
 						onClick: () => {
-							goto(`/channels/${event.channel_id}`);
+							goto(
+								`/channels/${event.channel_id}${data?.parent_id ? `?thread=${data.parent_id}` : ''}`
+							);
 						},
 						content: data?.content,
 						title: `${title}`
@@ -1049,11 +1067,7 @@
 	};
 
 	const windowMessageEventHandler = async (event) => {
-		if (
-			!['https://openwebui.com', 'https://www.openwebui.com', 'http://localhost:9999'].includes(
-				event.origin
-			)
-		) {
+		if (!COMMUNITY_ORIGINS.includes(event.origin)) {
 			return;
 		}
 
@@ -1247,10 +1261,11 @@
 			queryLocale: new URLSearchParams(window.location.search).get('lang'),
 			savedLocale: localStorage?.locale,
 			browserLocales: browserLanguages,
-			supportedLocales: languages
+			supportedLocales: languages,
+			fallbackLocale: backendConfig?.default_locale
 		});
 		applyDocumentLocale(lang);
-		initI18n(lang);
+		await initI18n(lang, backendConfig?.i18n ?? {});
 		dayjs.locale(lang);
 
 		if (backendConfig) {
