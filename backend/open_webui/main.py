@@ -52,6 +52,7 @@ from open_webui.config import (
     ENABLE_ADMIN_CHAT_ACCESS,
     ENABLE_ADMIN_EXPORT,
     ENABLE_WORKSPACE_MCP_GATEWAY_DRIVE,
+    ENABLE_WORKSPACE_MCP_GATEWAY_OAUTH_LINKING,
     ENABLE_WORKSPACE_MCP_GATEWAY_TELEGRAM,
     ENABLE_ONEDRIVE_BUSINESS,
     ENABLE_ONEDRIVE_PERSONAL,
@@ -189,6 +190,7 @@ from open_webui.routers import (
     users,
     utils,
     workspace_google_drive,
+    workspace_mcp_oauth,
     workspace_telegram,
 )
 from open_webui.routers.retrieval import (
@@ -1002,6 +1004,11 @@ app.include_router(
 app.include_router(
     workspace_telegram.router,
     prefix='/api/v1/integrations/telegram',
+    tags=['integrations'],
+)
+app.include_router(
+    workspace_mcp_oauth.router,
+    prefix='/api/v1/integrations/mcp-oauth',
     tags=['integrations'],
 )
 
@@ -2548,6 +2555,7 @@ async def get_app_config(request: Request):
                     'enable_google_drive_integration': config.get('google_drive.enable'),
                     'enable_workspace_google_drive_integration': ENABLE_WORKSPACE_MCP_GATEWAY_DRIVE,
                     'enable_workspace_telegram_integration': ENABLE_WORKSPACE_MCP_GATEWAY_TELEGRAM,
+                    'enable_workspace_mcp_oauth_linking': ENABLE_WORKSPACE_MCP_GATEWAY_OAUTH_LINKING,
                     'enable_onedrive_integration': config.get('onedrive.enable'),
                     'enable_memories': config.get('memories.enable'),
                     **(

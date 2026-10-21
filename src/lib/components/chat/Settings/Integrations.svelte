@@ -15,6 +15,7 @@
 	import Connection from './Tools/Connection.svelte';
 	import Terminals from './Integrations/Terminals.svelte';
 	import Telegram from './Integrations/Telegram.svelte';
+	import McpOAuth from './Integrations/McpOAuth.svelte';
 	import UserSettingSection from './UserSettingSection.svelte';
 
 	import AddToolServerModal from '$lib/components/AddToolServerModal.svelte';
@@ -108,8 +109,16 @@
 
 	<div class="flex flex-1 min-h-0 flex-col overflow-y-auto scrollbar-hover pr-1.5">
 		{#if servers !== null}
+			{#if $config?.features?.enable_workspace_mcp_oauth_linking}
+				<UserSettingSection title={$i18n.t('External MCP access')} first>
+					<McpOAuth />
+				</UserSettingSection>
+			{/if}
 			{#if $config?.features?.enable_workspace_telegram_integration}
-				<UserSettingSection title={$i18n.t('Telegram')} first>
+				<UserSettingSection
+					title={$i18n.t('Telegram')}
+					first={!$config?.features?.enable_workspace_mcp_oauth_linking}
+				>
 					<Telegram />
 				</UserSettingSection>
 			{/if}

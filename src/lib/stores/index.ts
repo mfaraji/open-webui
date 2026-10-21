@@ -381,6 +381,7 @@ type Config = {
 		enable_google_drive_integration: boolean;
 		enable_workspace_google_drive_integration?: boolean;
 		enable_workspace_telegram_integration?: boolean;
+		enable_workspace_mcp_oauth_linking?: boolean;
 		enable_onedrive_integration: boolean;
 		enable_image_generation: boolean;
 		enable_admin_export: boolean;

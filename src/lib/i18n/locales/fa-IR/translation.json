@@ -4082,5 +4082,18 @@
 	"YouTube": "یوتیوب",
 	"YouTube video player": "پخش\u200cکننده ویدیوی YouTube",
 	"Zoom in": "بزرگ\u200cنمایی",
-	"Zoom out": "کوچک\u200cنمایی"
+	"Zoom out": "کوچک\u200cنمایی",
+	"External MCP access": "دسترسی خارجی MCP",
+	"Checking account link…": "در حال بررسی اتصال حساب…",
+	"OAuth login linked": "ورود OAuth متصل است",
+	"OAuth login not linked": "ورود OAuth متصل نیست",
+	"Link your existing account once to use its Google, Apex, and Telegram tools from ChatGPT or a CLI.": "برای استفاده از ابزارهای گوگل، اپکس و تلگرام در ChatGPT یا خط فرمان، یک‌بار حساب فعلی خود را متصل کنید.",
+	"Link OAuth login": "اتصال ورود OAuth",
+	"Unlink OAuth login": "قطع اتصال ورود OAuth",
+	"Refresh status": "به‌روزرسانی وضعیت",
+	"Disconnect this OAuth login from your Open WebUI account?": "این ورود OAuth از حساب Open WebUI شما جدا شود؟",
+	"Could not start account linking.": "شروع اتصال حساب ممکن نشد.",
+	"Could not remove account link.": "قطع اتصال حساب ممکن نشد.",
+	"Could not load account link.": "بارگذاری وضعیت اتصال حساب ممکن نشد.",
+	"Refresh failed.": "به‌روزرسانی ناموفق بود."
 }
