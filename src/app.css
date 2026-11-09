@@ -28,6 +28,7 @@
 	--ashpazi-primary-hover: #0b564d;
 	--ashpazi-on-primary: #ffffff;
 	--ashpazi-selected: #e3f0ed;
+	--ashpazi-outline: #8b8b84;
 	--ashpazi-focus: #0f6b60;
 	--ashpazi-warning: #8c5500;
 	--ashpazi-danger: #b42318;
@@ -64,6 +65,7 @@
 	--ashpazi-primary-hover: #65c4b6;
 	--ashpazi-on-primary: #0b1f1c;
 	--ashpazi-selected: #1f3532;
+	--ashpazi-outline: #878a87;
 	--ashpazi-focus: #6cc7b9;
 	--ashpazi-warning: #e7a52e;
 	--ashpazi-danger: #f97066;
@@ -162,6 +164,25 @@ kbd,
 
 .ashpazi-end-auto {
 	margin-inline-end: auto;
+}
+
+/* The composer is the main control on the page: a real surface, a clear outline (3:1 against
+   the canvas) and an accent focus ring that does not rely on color alone for its edge. */
+#message-input-container {
+	background-color: var(--ashpazi-surface);
+	border-color: var(--ashpazi-outline);
+	box-shadow: var(--ashpazi-shadow-md);
+}
+
+#message-input-container:hover {
+	border-color: var(--ashpazi-text);
+}
+
+#message-input-container:focus-within {
+	border-color: var(--ashpazi-primary);
+	box-shadow:
+		0 0 0 3px color-mix(in srgb, var(--ashpazi-primary) 24%, transparent),
+		var(--ashpazi-shadow-md);
 }
 
 /* The open chat gets a tinted background and an accent bar on the inline-start edge. */

@@ -2817,7 +2817,7 @@
 													content={callActive ? $i18n.t('Call in progress') : $i18n.t('Voice mode')}
 												>
 													<button
-														class=" bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full size-9 pointer-coarse:size-11 flex items-center justify-center self-center focus-ring"
+														class=" bg-[var(--ashpazi-primary)] text-[var(--ashpazi-on-primary)] hover:bg-[var(--ashpazi-primary-hover)] transition rounded-full size-9 pointer-coarse:size-11 flex items-center justify-center self-center focus-ring"
 														class:call-active={callActive}
 														type="button"
 														on:click={async () => {

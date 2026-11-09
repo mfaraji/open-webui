@@ -63,7 +63,10 @@
 	};
 
 	$: if (suggestionPrompts) {
-		sortedPrompts = [...(suggestionPrompts ?? [])].sort(() => Math.random() - 0.5);
+		const prompts = [...(suggestionPrompts ?? [])];
+		// A short, curated list (such as the three Persian starters) keeps its order; longer
+		// lists keep the upstream behavior of showing them in a random order.
+		sortedPrompts = prompts.length > 3 ? prompts.sort(() => Math.random() - 0.5) : prompts;
 	}
 </script>
 

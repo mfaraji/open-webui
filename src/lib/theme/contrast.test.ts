@@ -65,6 +65,11 @@ describe.each(Object.entries(themes))('%s theme contrast', (_name, t) => {
 		expect(contrast(t[fg], t[bg]), `${fg} ${t[fg]} on ${bg} ${t[bg]}`).toBeGreaterThanOrEqual(4.5);
 	});
 
+	it('gives the composer outline 3:1 against the canvas and the surface', () => {
+		expect(contrast(t.outline, t.canvas)).toBeGreaterThanOrEqual(3);
+		expect(contrast(t.outline, t.surface)).toBeGreaterThanOrEqual(3);
+	});
+
 	it('keeps the focus ring and borders perceivable (3:1 for focus)', () => {
 		expect(contrast(t.focus, t.canvas)).toBeGreaterThanOrEqual(3);
 		expect(contrast(t.focus, t.surface)).toBeGreaterThanOrEqual(3);
