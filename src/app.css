@@ -16,64 +16,84 @@
 /* --app-text-scale is updated via the UI Scale slider (Interface.svelte) */
 :root {
 	--app-text-scale: 1;
-	--ashpazi-canvas: #fcfaf7;
+
+	/* Ivory canvas, white elevated surfaces, charcoal text, one deep-teal accent. */
+	--ashpazi-canvas: #f8f6f1;
 	--ashpazi-surface: #ffffff;
-	--ashpazi-elevated: #f6f1ea;
-	--ashpazi-border: #ded5c9;
-	--ashpazi-text: #211d19;
-	--ashpazi-muted: #6f6257;
-	--ashpazi-primary: #a6333d;
-	--ashpazi-primary-hover: #872730;
-	--ashpazi-focus: #a6333d;
+	--ashpazi-elevated: #f1eee7;
+	--ashpazi-border: #e2ddd3;
+	--ashpazi-text: #202624;
+	--ashpazi-muted: #5d6662;
+	--ashpazi-primary: #0f6b60;
+	--ashpazi-primary-hover: #0b564d;
+	--ashpazi-on-primary: #ffffff;
+	--ashpazi-selected: #e3f0ed;
+	--ashpazi-focus: #0f6b60;
 	--ashpazi-warning: #8c5500;
 	--ashpazi-danger: #b42318;
 
+	--ashpazi-shadow-sm: 0 1px 2px rgb(32 38 36 / 0.06);
+	--ashpazi-shadow-md: 0 4px 16px rgb(32 38 36 / 0.08), 0 1px 3px rgb(32 38 36 / 0.06);
+	--ashpazi-radius-sm: 0.5rem;
+	--ashpazi-radius-md: 0.75rem;
+	--ashpazi-radius-lg: 1.25rem;
+
 	/* Upstream gray utilities intentionally resolve to this warm neutral scale. */
-	--color-gray-50: #fcfaf7;
-	--color-gray-100: #f6f1ea;
-	--color-gray-200: #ded5c9;
-	--color-gray-300: #c7bbae;
-	--color-gray-400: #9b8e82;
-	--color-gray-500: #6f6257;
-	--color-gray-600: #564b42;
-	--color-gray-700: #3b342e;
-	--color-gray-800: #2a2420;
-	--color-gray-850: #211d19;
-	--color-gray-900: #211d19;
-	--color-gray-950: #171411;
+	--color-gray-50: #f8f6f1;
+	--color-gray-100: #f1eee7;
+	--color-gray-200: #e2ddd3;
+	--color-gray-300: #cdc8bd;
+	--color-gray-400: #8c918c;
+	--color-gray-500: #5d6662;
+	--color-gray-600: #475049;
+	--color-gray-700: #343c39;
+	--color-gray-800: #2a312f;
+	--color-gray-850: #202624;
+	--color-gray-900: #202624;
+	--color-gray-950: #171c1b;
 }
 
 .dark {
-	--ashpazi-canvas: #171411;
-	--ashpazi-surface: #211d19;
-	--ashpazi-elevated: #2a2420;
-	--ashpazi-border: #40372f;
-	--ashpazi-text: #f7f1e8;
-	--ashpazi-muted: #b7aa9c;
-	--ashpazi-focus: #e2737c;
+	--ashpazi-canvas: #151918;
+	--ashpazi-surface: #1c2120;
+	--ashpazi-elevated: #242a28;
+	--ashpazi-border: #343b39;
+	--ashpazi-text: #ecefec;
+	--ashpazi-muted: #a3aca8;
+	--ashpazi-primary: #4fb3a5;
+	--ashpazi-primary-hover: #65c4b6;
+	--ashpazi-on-primary: #0b1f1c;
+	--ashpazi-selected: #1f3532;
+	--ashpazi-focus: #6cc7b9;
 	--ashpazi-warning: #e7a52e;
-	--color-gray-50: #302923;
-	--color-gray-100: #40372f;
-	--color-gray-200: #51473e;
-	--color-gray-300: #76695d;
-	--color-gray-400: #96897d;
-	--color-gray-500: #b7aa9c;
-	--color-gray-600: #d2c7bb;
-	--color-gray-700: #e3dad0;
-	--color-gray-800: #2a2420;
-	--color-gray-850: #211d19;
-	--color-gray-900: #211d19;
-	--color-gray-950: #171411;
+	--ashpazi-danger: #f97066;
+
+	--ashpazi-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+	--ashpazi-shadow-md: 0 4px 16px rgb(0 0 0 / 0.45), 0 1px 3px rgb(0 0 0 / 0.4);
+
+	--color-gray-50: #242a28;
+	--color-gray-100: #2e3532;
+	--color-gray-200: #3d4542;
+	--color-gray-300: #5e6864;
+	--color-gray-400: #858f8b;
+	--color-gray-500: #a3aca8;
+	--color-gray-600: #c3cac6;
+	--color-gray-700: #dde2df;
+	--color-gray-800: #242a28;
+	--color-gray-850: #1c2120;
+	--color-gray-900: #1c2120;
+	--color-gray-950: #151918;
 }
 
 .dark[data-theme='oled'] {
 	--ashpazi-canvas: #000;
-	--ashpazi-surface: #0c0a09;
-	--ashpazi-elevated: #171310;
-	--ashpazi-border: #302923;
-	--color-gray-800: #171310;
-	--color-gray-850: #0c0a09;
-	--color-gray-900: #0c0a09;
+	--ashpazi-surface: #0b0d0d;
+	--ashpazi-elevated: #141716;
+	--ashpazi-border: #2a302e;
+	--ashpazi-selected: #12302c;
+	--color-gray-800: #141716;
+	--color-gray-850: #0b0d0d;
+	--color-gray-900: #0b0d0d;
 	--color-gray-950: #000;
 }
 
@@ -101,6 +121,24 @@ html:lang(fa) h5,
 html:lang(fa) h6 {
 	font-weight: 650;
 	line-height: 1.55;
+}
+
+/* Persian reading size: 16px text at a 1.8 line height for chat prose and the composer. */
+html:lang(fa) .markdown-prose,
+html:lang(fa) .input-prose {
+	font-size: 1rem !important;
+}
+
+html:lang(fa) .markdown-prose :where(p, li, blockquote, td, th),
+html:lang(fa) .input-prose :where(p, li) {
+	line-height: 1.8;
+}
+
+.ashpazi-welcome-heading {
+	font-size: clamp(1.75rem, 1.2rem + 1.2vw, 2rem);
+	font-weight: 650;
+	line-height: 1.5;
+	color: var(--ashpazi-text);
 }
 
 code,
@@ -541,12 +579,12 @@ p[dir='auto'] {
 
 :focus-visible:not(.ProseMirror):not([contenteditable='true']):not(input):not(textarea),
 .focus-ring:focus-visible {
-	outline: 2px solid theme(--color-blue-500);
+	outline: 2px solid var(--ashpazi-focus);
 	outline-offset: -2px;
 }
 
 html.high-contrast :is(input, textarea, [contenteditable='true'], .ProseMirror):focus-visible {
-	outline: 2px solid theme(--color-blue-500);
+	outline: 2px solid var(--ashpazi-focus);
 	outline-offset: -2px;
 }
 
@@ -882,13 +920,8 @@ html.high-contrast.dark .ProseMirror p.is-editor-empty:first-child::before {
 }
 
 body {
-	background: #fff;
-	color: #000;
-}
-
-.dark body {
-	background: #171717;
-	color: #eee;
+	background: var(--ashpazi-canvas);
+	color: var(--ashpazi-text);
 }
 
 /* Position the handle relative to each LI */

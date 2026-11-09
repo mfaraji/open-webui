@@ -32,7 +32,7 @@
 			name="viewport"
 			content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
 		/>
-		<meta name="theme-color" content="#FCFAF7" />
+		<meta name="theme-color" content="#F8F6F1" />
 		<meta name="robots" content="noindex,nofollow" />
 
 		<script src="/static/loader.js" defer crossorigin="use-credentials"></script>
@@ -75,7 +75,7 @@
 				if (localStorage.theme === 'system') {
 					document.documentElement.classList.add(prefersDarkTheme ? 'dark' : 'light');
 					document.documentElement.dataset.theme = prefersDarkTheme ? 'dark' : 'light';
-					metaThemeColorTag.setAttribute('content', prefersDarkTheme ? '#171411' : '#FCFAF7');
+					metaThemeColorTag.setAttribute('content', prefersDarkTheme ? '#151918' : '#F8F6F1');
 				} else if (localStorage.theme === 'oled-dark') {
 					document.documentElement.classList.add('dark');
 					document.documentElement.dataset.theme = 'oled';
@@ -83,14 +83,14 @@
 				} else if (localStorage.theme === 'light') {
 					document.documentElement.classList.add('light');
 					document.documentElement.dataset.theme = 'light';
-					metaThemeColorTag.setAttribute('content', '#FCFAF7');
+					metaThemeColorTag.setAttribute('content', '#F8F6F1');
 				} else if (localStorage.theme === 'her') {
 					document.documentElement.classList.add('her');
 					metaThemeColorTag.setAttribute('content', '#983724');
 				} else {
 					document.documentElement.classList.add('dark');
 					document.documentElement.dataset.theme = 'dark';
-					metaThemeColorTag.setAttribute('content', '#171411');
+					metaThemeColorTag.setAttribute('content', '#151918');
 				}
 
 				// LICENSE covers these Open WebUI splash logo assets.
@@ -112,12 +112,12 @@
 							document.documentElement.classList.add('dark');
 							document.documentElement.classList.remove('light');
 							document.documentElement.dataset.theme = 'dark';
-							metaThemeColorTag.setAttribute('content', '#171411');
+							metaThemeColorTag.setAttribute('content', '#151918');
 						} else {
 							document.documentElement.classList.add('light');
 							document.documentElement.classList.remove('dark');
 							document.documentElement.dataset.theme = 'light';
-							metaThemeColorTag.setAttribute('content', '#FCFAF7');
+							metaThemeColorTag.setAttribute('content', '#F8F6F1');
 						}
 					}
 				});
@@ -229,10 +229,14 @@
 		}
 
 		#splash-screen {
-			background: #fff;
+			background: #f8f6f1;
 		}
 
 		html.dark #splash-screen {
+			background: #151918;
+		}
+
+		html[data-theme='oled'] #splash-screen {
 			background: #000;
 		}
 
