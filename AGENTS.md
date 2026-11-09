@@ -30,3 +30,9 @@ This repository is the Ashpazi fork of Open WebUI. Keep changes narrow and compa
 - PWA `/manifest.json` and manifest icons are Open WebUI-owned. The deployment mounts Ashpazi assets into Open WebUI; nginx serves only the copied Digital Asset Links file.
 - Never commit credentials, API keys, user data, `.env` files, or generated production artifacts.
 - Keep Ashpazi patches independently understandable so release merges can accept upstream behavior first, then reapply the presentation change.
+
+## Assistant and model names
+
+- The default assistant above replies is "Dana" / "دانا" (the `Dana` translation key). A model with a configured name (a custom assistant, or a base model renamed in Workspace > Models) keeps that name. See `src/lib/utils/modelNames.ts`.
+- The model picker shows configured names, then `MODEL_DISPLAY_ALIASES` for raw IDs (currently `gemini-4-argon` → Gemini), then the raw ID. The exact ID stays in tooltips, accessible names, the per-reply details and picker search. Add aliases there, not in components.
+- Attribution comes from `message.model` on each reply, so switching models never rewrites earlier replies.

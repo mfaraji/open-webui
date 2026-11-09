@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { modelPickerName } from '$lib/utils/modelNames';
 	import { marked } from 'marked';
 	import Fuse from 'fuse.js';
 	import { autoUpdate, computePosition, flip, offset, shift, size } from '@floating-ui/dom';
@@ -35,10 +36,7 @@
 	} from '$lib/stores';
 	import { toast } from 'svelte-sonner';
 	import { capitalizeFirstLetter, sanitizeResponseContent, splitStream } from '$lib/utils';
-	import {
-		resolveLocalizedModelDescription,
-		resolveLocalizedModelName
-	} from '$lib/utils/localizedContent';
+	import { resolveLocalizedModelDescription } from '$lib/utils/localizedContent';
 	import { getModels } from '$lib/apis';
 
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
@@ -230,14 +228,14 @@
 		items.map((item) => {
 			const _item = {
 				...item,
-				modelName: resolveLocalizedModelName(item.model, $i18n.language),
+				modelName: modelPickerName(item.model, $i18n.language),
 				tags: (item.model?.tags ?? []).map((tag) => tag.name).join(' '),
 				desc: resolveLocalizedModelDescription(item.model, $i18n.language)
 			};
 			return _item;
 		}),
 		{
-			keys: ['value', 'tags', 'modelName'],
+			keys: ['value', 'label', 'tags', 'modelName'],
 			threshold: 0.4
 		}
 	);

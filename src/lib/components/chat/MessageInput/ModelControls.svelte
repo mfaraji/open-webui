@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { modelPickerName } from '$lib/utils/modelNames';
 	import { getContext, tick } from 'svelte';
 	import { models, user, mobile, settings, type Model } from '$lib/stores';
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
@@ -13,7 +14,7 @@
 	import Check from '$lib/components/icons/Check.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Knobs from '$lib/components/icons/Knobs.svelte';
-	import { localizeModelControls, resolveLocalizedModelName } from '$lib/utils/localizedContent';
+	import { localizeModelControls } from '$lib/utils/localizedContent';
 
 	const i18n: any = getContext('i18n');
 	export let selectedModels: string[] = [];
@@ -140,7 +141,7 @@
 					{#each available as model (model.id)}
 						{#if selectedModels.length > 1}
 							<div class="truncate px-2 pt-1.5 pb-0.5 text-xs text-gray-400 dark:text-gray-500">
-								{resolveLocalizedModelName(model, $i18n.language)}
+								{modelPickerName(model, $i18n.language)}
 							</div>
 						{/if}
 						{#each Object.entries(localizeModelControls(model, $i18n.language)) as [key, control] (key)}

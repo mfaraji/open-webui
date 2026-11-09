@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hasConfiguredName, modelPickerName } from '$lib/utils/modelNames';
 	import type { TerminalContext } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 	import { marked } from 'marked';
@@ -22,7 +23,6 @@
 	import { sanitizeResponseContent, extractCurlyBraceWords } from '$lib/utils';
 	import {
 		resolveLocalizedModelDescription,
-		resolveLocalizedModelName,
 		resolveLocalizedModelPromptSuggestions,
 		resolveLocalizedPromptSuggestions
 	} from '$lib/utils/localizedContent';
@@ -153,17 +153,17 @@
 					<div class="flex shrink-0 justify-center mb-3">
 						<div class="flex -space-x-4 mb-0.5" in:fade={{ duration: 100 }}>
 							{#each models as model, modelIdx}
-								<Tooltip content={resolveLocalizedModelName(model, $i18n.language)} placement="top">
+								<Tooltip content={modelPickerName(model, $i18n.language)} placement="top">
 									<button
 										aria-label={$i18n.t('Get information on {{name}} in the UI', {
-											name: resolveLocalizedModelName(model, $i18n.language)
+											name: modelPickerName(model, $i18n.language)
 										})}
 										on:click={() => {
 											selectedModelIdx = modelIdx;
 										}}
 									>
 										<img
-											src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}&lang=${$i18n.language}`}
+											src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}${hasConfiguredName(model) ? `&lang=${$i18n.language}` : ''}`}
 											class=" size-9 @sm:size-10 rounded-2xl"
 											aria-hidden="true"
 											draggable="false"

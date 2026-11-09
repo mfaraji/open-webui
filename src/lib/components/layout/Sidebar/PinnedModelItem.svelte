@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { modelPickerName } from '$lib/utils/modelNames';
 	import { getContext } from 'svelte';
 
 	const i18n = getContext('i18n');
 
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
-	import { resolveLocalizedModelName } from '$lib/utils/localizedContent';
 
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import PinSlash from './icons/PinSlash.svelte';
@@ -15,7 +15,7 @@
 	export let onUnpin = () => {};
 
 	let mouseOver = false;
-	$: localizedModelName = resolveLocalizedModelName(model, $i18n.language);
+	$: localizedModelName = modelPickerName(model, $i18n.language);
 </script>
 
 {#if model}

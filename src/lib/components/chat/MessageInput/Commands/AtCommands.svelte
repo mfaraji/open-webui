@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { modelPickerName } from '$lib/utils/modelNames';
 	import Fuse from 'fuse.js';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
 
@@ -15,10 +16,7 @@
 	import { searchKnowledgeBases, searchKnowledgeFiles } from '$lib/apis/knowledge';
 	import { searchFiles, filesystemFile } from '$lib/apis/terminal';
 	import { decodeString, isValidHttpUrl, isYoutubeUrl } from '$lib/utils';
-	import {
-		resolveLocalizedModelDescription,
-		resolveLocalizedModelName
-	} from '$lib/utils/localizedContent';
+	import { resolveLocalizedModelDescription } from '$lib/utils/localizedContent';
 	import { isTemporaryChatId } from '$lib/utils/chatId';
 
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -49,7 +47,7 @@
 		.filter((model) => !model?.info?.meta?.hidden)
 		.map((model) => ({
 			...model,
-			modelName: resolveLocalizedModelName(model, $i18n.language),
+			modelName: modelPickerName(model, $i18n.language),
 			tags: model?.info?.meta?.tags?.map((tag: any) => tag.name).join(' '),
 			desc: resolveLocalizedModelDescription(model, $i18n.language)
 		}));
@@ -339,7 +337,7 @@
 				<div class="flex min-w-0 items-center text-black dark:text-gray-100">
 					<img
 						src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model.id}&lang=${$i18n.language}`}
-						alt={resolveLocalizedModelName(model, $i18n.language) ?? model.id}
+						alt={modelPickerName(model, $i18n.language) ?? model.id}
 						class="mr-2 size-4.5 rounded-full object-cover"
 						on:error={(e) => {
 							// LICENSE covers this Open WebUI fallback logo.
@@ -349,7 +347,7 @@
 						}}
 					/>
 					<div class="min-w-0 truncate">
-						{resolveLocalizedModelName(model, $i18n.language)}
+						{modelPickerName(model, $i18n.language)}
 					</div>
 				</div>
 			</button>

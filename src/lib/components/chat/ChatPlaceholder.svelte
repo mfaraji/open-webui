@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { modelPickerName } from '$lib/utils/modelNames';
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
@@ -12,7 +13,6 @@
 	import { sanitizeResponseContent } from '$lib/utils';
 	import {
 		resolveLocalizedModelDescription,
-		resolveLocalizedModelName,
 		resolveLocalizedModelPromptSuggestions,
 		resolveLocalizedPromptSuggestions
 	} from '$lib/utils/localizedContent';
@@ -40,7 +40,7 @@
 
 	$: models = modelIds.map((id) => $_models.find((m) => m.id === id));
 	$: selectedModel = atSelectedModel ?? models[selectedModelIdx];
-	$: selectedModelName = resolveLocalizedModelName(selectedModel, $i18n.language);
+	$: selectedModelName = modelPickerName(selectedModel, $i18n.language);
 	$: selectedModelDescription = resolveLocalizedModelDescription(selectedModel, $i18n.language);
 	$: selectedSuggestionPrompts =
 		resolveLocalizedModelPromptSuggestions(atSelectedModel, $i18n.language) ??

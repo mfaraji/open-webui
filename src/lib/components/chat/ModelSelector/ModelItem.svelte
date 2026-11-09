@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hasConfiguredName } from '$lib/utils/modelNames';
 	import { marked } from 'marked';
 
 	import { getContext, tick } from 'svelte';
@@ -57,7 +58,9 @@
 <button
 	role="option"
 	aria-selected={isSelected}
-	aria-label={$i18n.t('Select {{modelName}} model', { modelName: item.label })}
+	aria-label={$i18n.t('Select {{modelName}} model', {
+		modelName: item.label === item.value ? item.label : `${item.label} (${item.value})`
+	})}
 	class="focus-ring group/item flex h-8 w-full cursor-pointer select-none items-center rounded-xl px-2 text-start text-[0.8125rem] font-normal text-gray-700 outline-hidden transition-colors duration-75 dark:text-gray-100 {($settings?.highContrastMode ??
 	false)
 		? 'hover:bg-gray-200 dark:hover:bg-gray-800'
@@ -98,7 +101,7 @@
 			<div class="flex items-center min-w-fit">
 				<Tooltip content={$user?.role === 'admin' ? (item?.value ?? '') : ''} placement="top-start">
 					<img
-						src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${item.model.id}&lang=${$i18n.language}`}
+						src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${item.model.id}${hasConfiguredName(item.model) ? `&lang=${$i18n.language}` : ''}`}
 						alt={$i18n.t('{{modelName}} profile image', { modelName: item.label })}
 						class="flex size-4 items-center rounded-full"
 						loading="lazy"

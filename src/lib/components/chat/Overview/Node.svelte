@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { modelPickerName } from '$lib/utils/modelNames';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 	import { getContext } from 'svelte';
@@ -7,7 +8,6 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Heart from '$lib/components/icons/Heart.svelte';
 	import { getOutputText } from '../Messages/structuredOutput';
-	import { resolveLocalizedModelName } from '$lib/utils/localizedContent';
 
 	const i18n = getContext('i18n');
 
@@ -19,7 +19,7 @@
 
 	$: messageContent = getMessageContent(data);
 	$: modelName = data?.model
-		? resolveLocalizedModelName(data.model, $i18n.language)
+		? modelPickerName(data.model, $i18n.language)
 		: (data?.message?.model ?? 'Assistant');
 </script>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { modelPickerName } from '$lib/utils/modelNames';
 	import type { TerminalContext } from '$lib/types';
 	import { getActiveLocale } from '$lib/i18n/locale';
 	import { resolveLocalizedFunction } from '$lib/utils/localizedContent';
@@ -76,7 +77,6 @@
 
 	import { WEBUI_BASE_URL, WEBUI_API_BASE_URL, PASTED_TEXT_CHARACTER_LIMIT } from '$lib/constants';
 	import { matchKeybinding, Shortcut } from '$lib/shortcuts';
-	import { resolveLocalizedModelName } from '$lib/utils/localizedContent';
 
 	import { createNoteHandler } from '../notes/utils';
 	import { getSuggestionRenderer } from '../common/RichTextInput/suggestions';
@@ -720,7 +720,7 @@
 	$: showCommands =
 		['/', '#', '@', '$', ':'].includes(command?.charAt(0)) || '\\#' === command?.slice(0, 2);
 	let suggestions = null;
-	$: atSelectedModelName = resolveLocalizedModelName(atSelectedModel, $i18n.language);
+	$: atSelectedModelName = modelPickerName(atSelectedModel, $i18n.language);
 
 	let showTools = false;
 	let showSkills = false;

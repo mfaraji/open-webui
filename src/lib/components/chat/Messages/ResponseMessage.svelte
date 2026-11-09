@@ -44,7 +44,12 @@
 		removeAllDetails
 	} from '$lib/utils';
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
-	import { resolveLocalizedModelName } from '$lib/utils/localizedContent';
+	import {
+		assistantName,
+		escapeHtmlText,
+		hasConfiguredName,
+		modelWithId
+	} from '$lib/utils/modelNames';
 	import equal from 'fast-deep-equal';
 
 	import Name from './Name.svelte';
@@ -198,7 +203,22 @@
 	let showDeleteConfirm = false;
 
 	let model = null;
-	$: localizedModelName = model ? resolveLocalizedModelName(model, $i18n.language) : message.model;
+	// The default assistant is Dana / دانا (follows the UI language); a custom assistant with a
+	// configured name keeps it. Attribution always comes from the model stored on this reply.
+	$: localizedModelName = assistantName(model, $i18n.language, (key) => $i18n.t(key));
+	$: modelDetails = modelWithId(model, message.model, $i18n.language);
+	$: usageText = message.usage
+		? JSON.stringify(message.usage, null, 2)
+				.replace(/"([^(")"]+)":/g, '$1:')
+				.slice(1, -1)
+				.split('\n')
+				.map((line) => line.slice(2))
+				.map((line) => (line.endsWith(',') ? line.slice(0, -1) : line))
+				.join('\n')
+		: '';
+	$: detailsTooltip =
+		`<div>${escapeHtmlText($i18n.t('Model'))}: <b>${escapeHtmlText(modelDetails)}</b></div>` +
+		(usageText ? `<pre>${sanitizeResponseContent(usageText)}</pre>` : '');
 	$: model = $models.find((m) => m.id === message.model);
 
 	$: statusEntries = message?.statusHistory ?? [...(message?.status ? [message?.status] : [])];
@@ -701,7 +721,7 @@
 	>
 		<div class={`shrink-0 ltr:me-2 rtl:ms-2 hidden @lg:flex mt-0.5 `}>
 			<ProfileImage
-				src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id ?? message.model}&lang=${$i18n.language}`}
+				src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id ?? message.model}${hasConfiguredName(model) ? `&lang=${$i18n.language}` : ''}`}
 				className={'size-7 assistant-message-profile-image'}
 			/>
 		</div>
@@ -709,7 +729,7 @@
 		<div class="flex-auto w-0 ps-1 relative">
 			{#if !compactPreview}
 				<Name>
-					<Tooltip content={localizedModelName} placement="top-start">
+					<Tooltip content={modelDetails} placement="top-start">
 						<span id="response-message-model-name" class="line-clamp-1 text-black dark:text-white">
 							{localizedModelName}
 						</span>
@@ -1200,23 +1220,11 @@
 									</Tooltip>
 								{/if}
 
-								{#if message.usage}
-									<Tooltip
-										content={message.usage
-											? `<pre>${sanitizeResponseContent(
-													JSON.stringify(message.usage, null, 2)
-														.replace(/"([^(")"]+)":/g, '$1:')
-														.slice(1, -1)
-														.split('\n')
-														.map((line) => line.slice(2))
-														.map((line) => (line.endsWith(',') ? line.slice(0, -1) : line))
-														.join('\n')
-												)}</pre>`
-											: ''}
-										placement="bottom"
-									>
+								{#if message.usage || message.model}
+									<Tooltip content={detailsTooltip} placement="bottom">
 										<button
-											aria-hidden="true"
+											type="button"
+											aria-label={`${$i18n.t('Message details')}: ${modelDetails}`}
 											class=" {isLastMessage || ($settings?.highContrastMode ?? false)
 												? 'visible'
 												: 'hover-reveal'} inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-gray-400 hover:text-gray-600 transition whitespace-pre-wrap"
