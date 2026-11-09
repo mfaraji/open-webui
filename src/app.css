@@ -583,7 +583,7 @@ input[type='number'] {
 	text-align: start;
 }
 
-p[dir='auto'] {
+:is(p, li, h1, h2, h3, h4, h5, h6, td, th)[dir='auto'] {
 	unicode-bidi: plaintext;
 }
 

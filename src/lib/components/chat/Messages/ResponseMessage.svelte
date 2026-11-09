@@ -132,6 +132,13 @@
 
 	let messageSource = history.messages[messageId];
 	let message: MessageType = structuredClone(messageSource);
+	// The row layout (avatar, name, actions) follows the UI direction. Only an explicit
+	// RTL/LTR preference forces it; otherwise each content block resolves its own direction
+	// from its text, so a Latin model name can no longer flip a Persian reply's row.
+	$: forcedDirection = ['rtl', 'ltr'].includes(contentDirection($settings?.chatDirection))
+		? contentDirection($settings?.chatDirection)
+		: undefined;
+
 	$: if (history.messages) {
 		const source = history.messages[messageId];
 		if (source) {
@@ -689,7 +696,7 @@
 	<div
 		class=" flex w-full message-{message.id}"
 		id="message-{message.id}"
-		dir={contentDirection($settings.chatDirection)}
+		dir={forcedDirection}
 		style="scroll-margin-top: 3rem;"
 	>
 		<div class={`shrink-0 ltr:me-2 rtl:ms-2 hidden @lg:flex mt-0.5 `}>
@@ -711,7 +718,10 @@
 			{/if}
 
 			<div>
-				<div class="chat-{message.role} w-full min-w-full">
+				<div
+					class="chat-{message.role} w-full min-w-full"
+					dir={contentDirection($settings.chatDirection)}
+				>
 					<div>
 						{#if model?.info?.meta?.capabilities?.status_updates ?? true}
 							<StatusHistory statusHistory={message?.statusHistory} />

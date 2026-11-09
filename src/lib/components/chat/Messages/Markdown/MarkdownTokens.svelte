@@ -51,6 +51,11 @@
 	export let messageId = '';
 	export let tokens: Token[];
 	export let top = true;
+
+	// Markdown column alignment is written as left/right; in mixed-direction content that
+	// means "start"/"end" of the cell's own text so Persian and English tables both read naturally.
+	const logicalAlign = (align: string) =>
+		align === 'left' ? 'start' : align === 'right' ? 'end' : align;
 	export let attributes = {};
 	export let sourceIds = [];
 
@@ -245,8 +250,11 @@
 							{#each token.header as header, headerIdx}
 								<th
 									scope="col"
+									dir="auto"
 									class="px-2.5! py-2! cursor-pointer border-b border-gray-100! dark:border-gray-800!"
-									style={token.align[headerIdx] ? `text-align: ${token.align[headerIdx]}` : ''}
+									style={token.align[headerIdx]
+										? `text-align: ${logicalAlign(token.align[headerIdx])}`
+										: ''}
 								>
 									<div class="gap-1.5 text-start">
 										<div class="shrink-0 break-normal">
@@ -268,12 +276,15 @@
 							<tr class="text-xs">
 								{#each row ?? [] as cell, cellIdx}
 									<td
+										dir="auto"
 										class="px-3! py-2! text-gray-900 dark:text-white w-max {token.rows.length -
 											1 ===
 										rowIdx
 											? ''
 											: 'border-b border-gray-50! dark:border-gray-850!'}"
-										style={token.align[cellIdx] ? `text-align: ${token.align[cellIdx]}` : ''}
+										style={token.align[cellIdx]
+											? `text-align: ${logicalAlign(token.align[cellIdx])}`
+											: ''}
 									>
 										<div class="break-normal">
 											<MarkdownInlineTokens
@@ -618,7 +629,7 @@
 		{/if}
 	{:else if token.type === 'text'}
 		{#if top}
-			<p class={singlePlainBlock ? '!my-0' : ''}>
+			<p dir="auto" class={singlePlainBlock ? '!my-0' : ''}>
 				{#if token.tokens}
 					<MarkdownInlineTokens
 						id={`${id}-${tokenIdx}-t`}

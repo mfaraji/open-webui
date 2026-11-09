@@ -15,6 +15,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <code
+	dir="ltr"
 	class="codespan cursor-pointer {!done && ($settings?.chatFadeStreamingText ?? true)
 		? 'fade-in-token'
 		: ''}"

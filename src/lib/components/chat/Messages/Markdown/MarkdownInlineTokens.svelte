@@ -112,22 +112,26 @@
 		{#if linkToken.noteId && !markdown?.document && markdown?.allowRemoteContent !== false}
 			<NoteLinkToken noteId={linkToken.noteId} href={linkToken.href} />
 		{:else if token.tokens && !linkToken.isAutolink}
-			<a
-				href={linkToken.safeHref}
-				target="_blank"
-				rel="nofollow"
-				title={token.title}
-				on:click={(e) => handleLinkClick(e, linkToken.href)}
-			>
-				<svelte:self id={`${id}-a`} tokens={token.tokens} {sourceIds} {onSourceClick} {done} />
-			</a>
+			<bdi>
+				<a
+					href={linkToken.safeHref}
+					target="_blank"
+					rel="nofollow"
+					title={token.title}
+					on:click={(e) => handleLinkClick(e, linkToken.href)}
+				>
+					<svelte:self id={`${id}-a`} tokens={token.tokens} {sourceIds} {onSourceClick} {done} />
+				</a>
+			</bdi>
 		{:else}
-			<a
-				href={linkToken.safeHref}
-				target="_blank"
-				rel="nofollow"
-				title={token.title}
-				on:click={(e) => handleLinkClick(e, linkToken.href)}>{linkToken.text}</a
+			<bdi>
+				<a
+					href={linkToken.safeHref}
+					target="_blank"
+					rel="nofollow"
+					title={token.title}
+					on:click={(e) => handleLinkClick(e, linkToken.href)}>{linkToken.text}</a
+				></bdi
 			>
 		{/if}
 	{:else if token.type === 'image'}
