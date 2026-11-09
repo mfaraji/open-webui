@@ -11,10 +11,12 @@
 		settings,
 		showArtifacts,
 		showControls,
-		artifactContents
+		artifactContents,
+		theme
 	} from '$lib/stores';
 	import { copyToClipboard, createMessagesList } from '$lib/utils';
 	import { injectCsp } from '$lib/utils/csp';
+	import { buildMessagePreviewDocument, type PreviewColors } from '$lib/utils/messagePreview';
 
 	import XMark from '../icons/XMark.svelte';
 	import ArrowsPointingOut from '../icons/ArrowsPointingOut.svelte';
@@ -25,11 +27,53 @@
 
 	export let overlay = false;
 
-	let contents: Array<{ type: string; content: string }> = [];
+	let contents: Array<{
+		type: string;
+		content: string;
+		variant?: 'message';
+		body?: string;
+		direction?: 'rtl' | 'ltr';
+	}> = [];
 	let selectedContentIdx = 0;
 
 	let copied = false;
 	let iframeElement: HTMLIFrameElement;
+
+	// Message previews follow the active app theme. The values are read from the same CSS
+	// tokens the app uses, and refreshed whenever the theme class on <html> changes.
+	let themeVersion = 0;
+	const readPreviewColors = (): PreviewColors => {
+		const style = getComputedStyle(document.documentElement);
+		const token = (name: string, fallback: string) =>
+			style.getPropertyValue(name).trim() || fallback;
+		const dark = document.documentElement.classList.contains('dark');
+		return {
+			background: token('--ashpazi-surface', dark ? '#1c2120' : '#ffffff'),
+			text: token('--ashpazi-text', dark ? '#ecefec' : '#202624'),
+			muted: token('--ashpazi-muted', dark ? '#a3aca8' : '#5d6662'),
+			link: token('--ashpazi-primary', dark ? '#4fb3a5' : '#0f6b60'),
+			border: token('--ashpazi-border', dark ? '#343b39' : '#e2ddd3'),
+			colorScheme: dark ? 'dark' : 'light'
+		};
+	};
+
+	const vazirmatnUrl = () =>
+		new URL('/assets/fonts/Vazirmatn-Variable.ttf', window.location.href).href;
+
+	// Same sandbox and CSP for every preview; only the document differs for message fragments.
+	// `_theme` and `_version` are only passed so Svelte re-runs this when the theme changes.
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const previewDocument = (entry: (typeof contents)[number], _theme: unknown, _version: number) =>
+		injectCsp(
+			entry.variant === 'message'
+				? buildMessagePreviewDocument(entry.body ?? entry.content, {
+						direction: entry.direction ?? 'ltr',
+						colors: readPreviewColors(),
+						fontUrl: vazirmatnUrl()
+					})
+				: entry.content,
+			$config?.ui?.iframe_csp ?? ''
+		);
 
 	function navigateContent(direction: 'prev' | 'next') {
 		selectedContentIdx =
@@ -92,6 +136,12 @@
 	};
 
 	onMount(() => {
+		const themeObserver = new MutationObserver(() => (themeVersion += 1));
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class', 'data-theme']
+		});
+
 		const unsubscribeArtifactCode = artifactCode.subscribe((value) => {
 			if (contents) {
 				const codeIdx = contents.findIndex((content) => content.content.includes(value));
@@ -117,6 +167,7 @@
 		});
 
 		return () => {
+			themeObserver.disconnect();
 			unsubscribeArtifactCode();
 			unsubscribeArtifactContents();
 		};
@@ -248,10 +299,7 @@
 							<iframe
 								bind:this={iframeElement}
 								title={$i18n.t('Content')}
-								srcdoc={injectCsp(
-									contents[selectedContentIdx].content,
-									$config?.ui?.iframe_csp ?? ''
-								)}
+								srcdoc={previewDocument(contents[selectedContentIdx], $theme, themeVersion)}
 								class="w-full border-0 h-full rounded-none"
 								sandbox="{($settings?.iframeSandboxAllowScripts ?? true)
 									? 'allow-scripts'

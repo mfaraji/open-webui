@@ -17,7 +17,12 @@ const TECHNICAL = new RegExp(
 		// e-mail addresses
 		String.raw`[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+`,
 		// Latin identifiers with internal separators: USD/IRR, gpt-4.1, report-v2.pdf
-		String.raw`[A-Za-z][A-Za-z0-9]*(?:[-./_:][A-Za-z0-9]+)+`
+		String.raw`[A-Za-z][A-Za-z0-9]*(?:[-./_:][A-Za-z0-9]+)+`,
+		// Parenthesized Latin groups so the brackets stay paired around them: (WTI), (USD/IRR)
+		String.raw`\([A-Za-z][A-Za-z0-9 ./_:-]*\)`,
+		// Signed or percent figures, in any digit set: +۱٫۲٪, -3.5%, ±0.4%
+		String.raw`[+\-\u2212\u00b1]?[0-9\u06f0-\u06f9\u0660-\u0669]+(?:[.,\u066b\u066c][0-9\u06f0-\u06f9\u0660-\u0669]+)*\s?[%\u066a]`,
+		String.raw`[+\u2212\u00b1][0-9\u06f0-\u06f9\u0660-\u0669]+(?:[.,\u066b\u066c][0-9\u06f0-\u06f9\u0660-\u0669]+)*`
 	].join('|'),
 	'g'
 );

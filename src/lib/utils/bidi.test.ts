@@ -53,4 +53,14 @@ describe('technical value isolation', () => {
 		expect(hasArabicScript('report')).toBe(false);
 		expect(hasArabicScript('گزارش')).toBe(true);
 	});
+
+	it('isolates signed percentages and parenthesized Latin groups', () => {
+		expect(technical('تغییر: +۱٫۲٪ (USD/IRR)')).toEqual(['+۱٫۲٪', '(USD/IRR)']);
+		expect(technical('نفت (WTI): ۶۱٫۴۰ دلار')).toEqual(['(WTI)']);
+		expect(technical('افت -3.5% در هفته')).toEqual(['-3.5%']);
+	});
+
+	it('does not isolate plain amounts or years', () => {
+		expect(technical('۹۲٬۵۰۰ تومان در ۱۴۰۵')).toEqual([]);
+	});
 });

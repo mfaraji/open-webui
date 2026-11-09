@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { TerminalContext } from '$lib/types';
+	import { classifyHtmlPreview, originalHtmlSource } from '$lib/utils/messagePreview';
 	import { v4 as uuidv4 } from 'uuid';
 	import { toast } from 'svelte-sonner';
 
@@ -2546,6 +2547,24 @@
 
 				if (htmlGroups && htmlGroups.length > 0) {
 					htmlGroups.forEach((group) => {
+						// Message-like fragments (text with <b>/<i> and newlines) get a dedicated preview
+						// wrapper. `content` stays the original HTML so Copy, Download and matching the
+						// source code block keep working; everything else uses the standard document.
+						const messagePreview = classifyHtmlPreview(group);
+						if (messagePreview.kind === 'message') {
+							contents = [
+								...contents,
+								{
+									type: 'iframe',
+									variant: 'message',
+									content: originalHtmlSource(group.html),
+									body: messagePreview.body,
+									direction: messagePreview.direction
+								}
+							];
+							return;
+						}
+
 						const renderedContent = `
                         <!DOCTYPE html>
                         <html lang="en">
