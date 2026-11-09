@@ -68,7 +68,7 @@
 						aria-hidden={models.length <= 1}
 						tabindex={models.length > 1 ? 0 : -1}
 						aria-label={$i18n.t('Get information on {{name}} in the UI', {
-							name: resolveLocalizedModelName(model, $i18n.language)
+							name: modelPickerName(model, $i18n.language)
 						})}
 						on:click={() => {
 							selectedModelIdx = modelIdx;
