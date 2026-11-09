@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { TerminalContext } from '$lib/types';
+	import { getActiveLocale } from '$lib/i18n/locale';
 	import { resolveLocalizedFunction } from '$lib/utils/localizedContent';
 	import { functions as localizedFunctions } from '$lib/stores';
 	import DOMPurify from 'dompurify';
@@ -386,7 +387,7 @@
 		}
 
 		if (text.includes('{{USER_LANGUAGE}}')) {
-			const language = localStorage.getItem('locale') || 'en-US';
+			const language = getActiveLocale();
 			text = text.replaceAll('{{USER_LANGUAGE}}', language);
 		}
 

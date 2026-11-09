@@ -42,9 +42,13 @@
 			// Avoid an LTR or fallback-font flash before Svelte and i18next initialize.
 			(() => {
 				const queryLocale = new URLSearchParams(window.location.search).get('lang');
-				const savedLocale = localStorage.getItem('locale');
+				// Only a deliberate choice is trusted this early; the full resolution,
+				// including the one-time migration, runs once the backend config loads.
+				const explicit = localStorage.getItem('localeChoice') === 'explicit';
+				const savedLocale = explicit ? localStorage.getItem('locale') : null;
+				const deploymentLocale = localStorage.getItem('deploymentLocale');
 				const browserLocale = (navigator.languages && navigator.languages[0]) || navigator.language;
-				const locale = queryLocale || savedLocale || browserLocale || 'en-US';
+				const locale = queryLocale || savedLocale || deploymentLocale || browserLocale || 'en-US';
 				const language = locale.toLowerCase().split('-')[0];
 				const rtlLanguages = ['ar', 'fa', 'he', 'ku', 'ps', 'sd', 'ug', 'ur', 'yi'];
 				document.documentElement.lang = locale;

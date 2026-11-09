@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
+	import { getActiveLocale } from '$lib/i18n/locale';
 	import { v4 as uuidv4 } from 'uuid';
 
 	import { tick, getContext, onMount } from 'svelte';
@@ -215,7 +216,7 @@
 		}
 
 		if (text.includes('{{USER_LANGUAGE}}')) {
-			const language = localStorage.getItem('locale') || 'en-US';
+			const language = getActiveLocale();
 			text = text.replaceAll('{{USER_LANGUAGE}}', language);
 		}
 

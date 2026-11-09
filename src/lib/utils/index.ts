@@ -4,6 +4,7 @@ import sha256 from 'js-sha256';
 import { parse as parseYaml } from 'yaml';
 import DOMPurify, { type UponSanitizeAttributeHookEvent } from 'dompurify';
 import { WEBUI_BASE_URL } from '$lib/constants';
+import { getActiveLocale } from '$lib/i18n/locale';
 import type { FileNavOpenRequest } from '$lib/stores';
 import { normalizeDocumentTargetPage } from '$lib/utils/documentPreview';
 
@@ -1243,7 +1244,7 @@ export const getPromptVariables = (user_name, user_location, user_email = '') =>
 		'{{CURRENT_TIME}}': getFormattedTime(),
 		'{{CURRENT_WEEKDAY}}': getWeekday(),
 		'{{CURRENT_TIMEZONE}}': getUserTimezone(),
-		'{{USER_LANGUAGE}}': localStorage.getItem('locale') || 'en-US'
+		'{{USER_LANGUAGE}}': getActiveLocale()
 	};
 };
 

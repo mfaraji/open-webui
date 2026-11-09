@@ -37,7 +37,7 @@ export const updateI18n = async (value: I18nOverrides = {}) => {
 	i18n.set(i18next);
 };
 
-import { applyDocumentLocale } from './locale';
+import { applyDocumentLocale, saveExplicitLocale } from './locale';
 
 const createI18nStore = (i18n: i18nType) => {
 	const i18nWritable = writable(i18n);
@@ -98,10 +98,10 @@ export const initI18n = (defaultLocale?: string, value: I18nOverrides = {}) => {
 		.init({
 			debug: false,
 			detection: {
-				order: ['querystring', 'localStorage', 'defaultLocale', 'navigator'],
-				caches: ['localStorage'],
-				lookupQuerystring: 'lang',
-				lookupLocalStorage: 'locale',
+				// resolveLocale() has already applied URL, saved choice, deployment
+				// default and browser order. Do not cache: only explicit choices persist.
+				order: ['defaultLocale'],
+				caches: [],
 				convertDetectedLanguage: toBundleCode
 			},
 			fallbackLng: {
@@ -125,6 +125,7 @@ export const getLanguages = async () => languages;
 // Serialize switches so a slower download cannot overwrite a newer selection.
 let languageChange = Promise.resolve();
 export const changeLanguage = (lang: string) => {
+	saveExplicitLocale(lang);
 	const change = languageChange.then(() => i18next.changeLanguage(toBundleCode(lang)));
 	languageChange = change.then(
 		() => {},

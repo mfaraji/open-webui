@@ -48,7 +48,12 @@
 	import { updated } from '$app/state';
 
 	import i18n, { initI18n, getLanguages } from '$lib/i18n';
-	import { applyDocumentLocale, resolveLocale } from '$lib/i18n/locale';
+	import {
+		applyDocumentLocale,
+		loadSavedLocale,
+		rememberDeploymentLocale,
+		resolveLocale
+	} from '$lib/i18n/locale';
 
 	import '../tailwind.css';
 	import '../app.css';
@@ -67,12 +72,7 @@
 	} from '$lib/utils/connections';
 
 	import { COMMUNITY_ORIGINS, WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
-	import {
-		cleanText,
-		displayFileHandler,
-		getUserTimezone,
-		removeAllDetails
-	} from '$lib/utils';
+	import { cleanText, displayFileHandler, getUserTimezone, removeAllDetails } from '$lib/utils';
 	import { setTextScale } from '$lib/utils/text-scale';
 
 	import NotificationToast from '$lib/components/NotificationToast.svelte';
@@ -1339,11 +1339,12 @@
 			: [navigator.language || navigator.userLanguage];
 		const lang = resolveLocale({
 			queryLocale: new URLSearchParams(window.location.search).get('lang'),
-			savedLocale: localStorage?.locale,
+			savedLocale: loadSavedLocale(browserLanguages, languages),
 			browserLocales: browserLanguages,
 			supportedLocales: languages,
-			fallbackLocale: backendConfig?.default_locale
+			deploymentLocale: backendConfig?.default_locale
 		});
+		rememberDeploymentLocale(backendConfig?.default_locale);
 		applyDocumentLocale(lang);
 		await initI18n(lang, backendConfig?.i18n ?? {});
 
