@@ -85,7 +85,7 @@
 	import { WEBUI_BASE_URL, WEBUI_API_BASE_URL, PASTED_TEXT_CHARACTER_LIMIT } from '$lib/constants';
 	import { matchKeybinding, Shortcut } from '$lib/shortcuts';
 	import { modelPickerName } from '$lib/utils/modelNames';
-	import { contentDirection, getActiveLocale } from '$lib/i18n/locale';
+	import { contentDirection, getActiveLocale, getLocaleDirection } from '$lib/i18n/locale';
 
 	import { createNoteHandler } from '../notes/utils';
 	import { getSuggestionRenderer } from '../common/RichTextInput/suggestions';
@@ -2569,7 +2569,11 @@
 								</div>
 							</div>
 
-							<div class=" flex justify-between mt-0.5 mb-2 mx-0.5 max-w-full">
+							<!-- The toolbar is UI chrome: it follows the interface language, not the draft text. -->
+							<div
+								class=" flex justify-between mt-0.5 mb-2 mx-0.5 max-w-full"
+								dir={getLocaleDirection($i18n.language)}
+							>
 								<div class="ms-1 self-end flex items-center">
 									<InputMenu
 										bind:show={showInputMenu}
