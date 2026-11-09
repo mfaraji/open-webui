@@ -164,6 +164,16 @@ kbd,
 	margin-inline-end: auto;
 }
 
+/* The open chat gets a tinted background and an accent bar on the inline-start edge. */
+#sidebar-chat-item.selected {
+	background-color: var(--ashpazi-selected);
+	box-shadow: inset 3px 0 0 var(--ashpazi-primary);
+}
+
+[dir='rtl'] #sidebar-chat-item.selected {
+	box-shadow: inset -3px 0 0 var(--ashpazi-primary);
+}
+
 #sidebar-chat-item {
 	/* sidebar item sizing scales for the chat list entries */
 	min-height: calc(32px * var(--app-text-scale, 1));

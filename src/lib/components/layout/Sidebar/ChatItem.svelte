@@ -733,6 +733,7 @@
 								archiveChatHandler(id);
 							}}
 							type="button"
+							aria-label={$i18n.t('Archive')}
 						>
 							<ArchiveBoxIcon className="size-3.5" strokeWidth="1.7" />
 						</button>
@@ -747,6 +748,7 @@
 									deleteChatHandler(id);
 								}}
 								type="button"
+								aria-label={$i18n.t('Delete')}
 							>
 								<GarbageBinIcon className="size-3.5" strokeWidth="1.7" />
 							</button>

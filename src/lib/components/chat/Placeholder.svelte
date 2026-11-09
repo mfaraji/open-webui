@@ -92,13 +92,11 @@
 	let models = [];
 	export let selectedModelIdx = 0;
 	let selectedModel;
-	let selectedModelName = '';
 	let selectedModelDescription = '';
 	let selectedSuggestionPrompts = [];
 
 	$: models = selectedModels.map((id) => $_models.find((m) => m.id === id));
 	$: selectedModel = atSelectedModel ?? models[selectedModelIdx];
-	$: selectedModelName = resolveLocalizedModelName(selectedModel, $i18n.language);
 	$: selectedModelDescription = resolveLocalizedModelDescription(selectedModel, $i18n.language);
 	$: selectedSuggestionPrompts =
 		resolveLocalizedModelPromptSuggestions(atSelectedModel, $i18n.language) ??
@@ -150,20 +148,15 @@
 					}}
 				/>
 			{:else}
-				<div class="flex flex-row justify-center gap-2.5 @sm:gap-3 w-fit px-5 max-w-xl">
-					<div class="flex shrink-0 justify-center">
+				<!-- The model is chosen from the composer toolbar; the hero only welcomes the user. -->
+				{#if models.length > 1}
+					<div class="flex shrink-0 justify-center mb-3">
 						<div class="flex -space-x-4 mb-0.5" in:fade={{ duration: 100 }}>
 							{#each models as model, modelIdx}
-								<Tooltip
-									content={(models[modelIdx]?.info?.meta?.tags ?? [])
-										.map((tag) => tag.name.toUpperCase())
-										.join(', ')}
-									placement="top"
-								>
+								<Tooltip content={resolveLocalizedModelName(model, $i18n.language)} placement="top">
 									<button
-										aria-hidden={models.length <= 1}
 										aria-label={$i18n.t('Get information on {{name}} in the UI', {
-											name: models[modelIdx]?.name
+											name: resolveLocalizedModelName(model, $i18n.language)
 										})}
 										on:click={() => {
 											selectedModelIdx = modelIdx;
@@ -186,22 +179,11 @@
 							{/each}
 						</div>
 					</div>
+				{/if}
 
-					<div
-						class=" text-2xl @sm:text-2xl line-clamp-1 flex items-center"
-						in:fade={{ duration: 100 }}
-					>
-						{#if selectedModelName}
-							<Tooltip content={selectedModelName} placement="top" className=" flex items-center ">
-								<span class="line-clamp-1">
-									{selectedModelName}
-								</span>
-							</Tooltip>
-						{:else}
-							{$i18n.t('Hello, {{name}}', { name: $user?.name })}
-						{/if}
-					</div>
-				</div>
+				<h1 class="ashpazi-welcome-heading px-5 max-w-xl" in:fade={{ duration: 100 }}>
+					{$i18n.t('How can I help you?')}
+				</h1>
 
 				<div class="flex mt-1 mb-2">
 					<div in:fade={{ duration: 100, delay: 50 }}>
@@ -301,7 +283,13 @@
 	{:else}
 		<div class="mx-auto max-w-2xl mt-2" in:fade={{ duration: 200, delay: 200 }}>
 			<div class="mx-5">
-				<Suggestions suggestionPrompts={selectedSuggestionPrompts} inputValue={prompt} {onSelect} />
+				<Suggestions
+					suggestionPrompts={selectedSuggestionPrompts}
+					inputValue={prompt}
+					{onSelect}
+					hideWhenTyping
+					fillOnly
+				/>
 			</div>
 		</div>
 	{/if}

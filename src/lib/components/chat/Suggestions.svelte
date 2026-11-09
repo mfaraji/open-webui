@@ -10,7 +10,12 @@
 	export let suggestionPrompts = [];
 	export let className = '';
 	export let inputValue = '';
-	export let onSelect = () => {};
+	type SelectEvent = { type: string; data: string; fillOnly?: boolean };
+	export let onSelect: (event: SelectEvent) => void = () => {};
+	/** Hide every suggestion as soon as the user types, instead of fuzzy-filtering them. */
+	export let hideWhenTyping = false;
+	/** Selecting a suggestion only fills the draft for editing; it never sends it. */
+	export let fillOnly = false;
 
 	let sortedPrompts = [];
 
@@ -41,7 +46,7 @@
 	}
 
 	const getFilteredPrompts = (inputValue) => {
-		if (inputValue.length > 500) {
+		if (inputValue.length > 500 || (hideWhenTyping && inputValue.trim() !== '')) {
 			filteredPrompts = [];
 		} else {
 			const newFilteredPrompts =
@@ -93,7 +98,7 @@
 				       px-2.5 py-1.5 rounded-lg bg-transparent transition-colors
 				       hover:text-gray-950 dark:hover:text-white group"
 					style="animation-delay: {idx * 45}ms"
-					on:click={() => onSelect({ type: 'prompt', data: prompt.content })}
+					on:click={() => onSelect({ type: 'prompt', data: prompt.content, fillOnly })}
 				>
 					<div class="flex flex-col text-start leading-snug">
 						{#if prompt.title && prompt.title[0] !== ''}
@@ -102,11 +107,13 @@
 							>
 								{prompt.title[0]}
 							</div>
-							<div
-								class="text-xs text-gray-600 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100 font-normal line-clamp-1"
-							>
-								{prompt.title[1]}
-							</div>
+							{#if prompt.title[1]}
+								<div
+									class="text-xs text-gray-600 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100 font-normal line-clamp-1"
+								>
+									{prompt.title[1]}
+								</div>
+							{/if}
 						{:else}
 							<div
 								class="text-sm font-normal group-hover:text-gray-950 dark:text-gray-300 dark:group-hover:text-white transition line-clamp-1"

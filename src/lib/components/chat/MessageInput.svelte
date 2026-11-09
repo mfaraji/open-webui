@@ -434,6 +434,14 @@
 		chatInputElement?.focus(options);
 	};
 
+	$: integrationsActive =
+		webSearchEnabled ||
+		imageGenerationEnabled ||
+		codeInterpreterEnabled ||
+		selectedToolIds.length > 0 ||
+		selectedSkillIds.length > 0 ||
+		selectedFilterIds.length > 0;
+
 	export const setText = async (text?: string, cb?: (text: string) => void) => {
 		const chatInput = document.getElementById('chat-input');
 
@@ -2407,8 +2415,9 @@
 										<button
 											type="button"
 											id="input-menu-button"
-											class="bg-transparent hover:bg-gray-100 text-gray-700 dark:text-white dark:hover:bg-gray-800 rounded-full size-[1.875rem] flex justify-center items-center outline-hidden focus:outline-hidden shrink-0"
-											aria-label={$i18n.t('More')}
+											class="bg-transparent hover:bg-gray-100 text-gray-700 dark:text-white dark:hover:bg-gray-800 rounded-full size-[1.875rem] pointer-coarse:size-11 flex justify-center items-center focus-ring shrink-0"
+											aria-label={$i18n.t('Add file')}
+											title={$i18n.t('Add file')}
 										>
 											<PlusAlt className="size-5" />
 										</button>
@@ -2457,10 +2466,18 @@
 											<button
 												type="button"
 												id="integration-menu-button"
-												class="bg-transparent hover:bg-gray-100 text-gray-700 dark:text-white dark:hover:bg-gray-800 rounded-full size-[1.875rem] flex justify-center items-center outline-hidden focus:outline-hidden shrink-0"
-												aria-label={$i18n.t('Integrations')}
+												class="relative bg-transparent hover:bg-gray-100 text-gray-700 dark:text-white dark:hover:bg-gray-800 rounded-full size-[1.875rem] pointer-coarse:size-11 flex justify-center items-center focus-ring shrink-0"
+												aria-label={integrationsActive
+													? `${$i18n.t('Integrations')} (${$i18n.t('Active')})`
+													: $i18n.t('Integrations')}
 											>
 												<Component className="size-4.5" strokeWidth="1.5" />
+												{#if integrationsActive}
+													<span
+														class="absolute top-0.5 end-0.5 size-2 rounded-full bg-[var(--ashpazi-primary)] ring-2 ring-white dark:ring-gray-900"
+														aria-hidden="true"
+													></span>
+												{/if}
 											</button>
 										</IntegrationsMenu>
 									{/if}
@@ -2711,7 +2728,7 @@
 								</div>
 
 								<div class="self-end flex space-x-1 me-1 min-w-0 gap-[0.03125rem]">
-									<div class="flex min-w-0 max-w-[10rem] items-center sm:max-w-[13rem]">
+									<div class="flex min-w-0 max-w-[10rem] items-center sm:max-w-[16rem]">
 										<ModelSelector
 											bind:this={modelSelector}
 											bind:selectedModels
@@ -2725,10 +2742,12 @@
 
 									{#if isActive && prompt === '' && files.length === 0}
 										<div class=" flex items-center">
-											<Tooltip content={$i18n.t('Stop')}>
+											<Tooltip content={$i18n.t('Stop response')}>
 												<button
-													aria-label={$i18n.t('Stop')}
-													class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-[0.3125rem]"
+													id="stop-response-button"
+													type="button"
+													aria-label={$i18n.t('Stop response')}
+													class="bg-[var(--ashpazi-primary)] text-[var(--ashpazi-on-primary)] hover:bg-[var(--ashpazi-primary-hover)] transition rounded-full size-9 pointer-coarse:size-11 flex items-center justify-center focus-ring"
 													on:click={() => {
 														stopResponse();
 													}}
@@ -2755,7 +2774,7 @@
 												<Tooltip content={$i18n.t('Dictate')}>
 													<button
 														id="voice-input-button"
-														class=" text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 self-center me-0.5"
+														class=" text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 pointer-coarse:p-3 self-center me-0.5 focus-ring"
 														type="button"
 														on:click={async () => {
 															try {
@@ -2798,7 +2817,7 @@
 													content={callActive ? $i18n.t('Call in progress') : $i18n.t('Voice mode')}
 												>
 													<button
-														class=" bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full p-[0.3125rem] self-center"
+														class=" bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full size-9 pointer-coarse:size-11 flex items-center justify-center self-center focus-ring"
 														class:call-active={callActive}
 														type="button"
 														on:click={async () => {
@@ -2880,9 +2899,12 @@
 													<button
 														id="send-message-button"
 														class="{!(prompt === '' && files.length === 0) || uploadPending
-															? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
-															: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-gray-700 disabled'} transition rounded-full p-[0.3125rem] self-center"
+															? 'bg-[var(--ashpazi-primary)] text-[var(--ashpazi-on-primary)] hover:bg-[var(--ashpazi-primary-hover)] '
+															: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed disabled'} transition rounded-full size-9 pointer-coarse:size-11 flex items-center justify-center self-center focus-ring"
 														type="submit"
+														aria-label={uploadPending
+															? $i18n.t('Waiting for upload...')
+															: $i18n.t('Send message')}
 														disabled={(prompt === '' && files.length === 0) || uploadPending}
 													>
 														{#if uploadPending}

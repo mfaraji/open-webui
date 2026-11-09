@@ -915,7 +915,7 @@
 				);
 			}}
 		>
-			<span class="min-w-0 flex-1 truncate">{triggerLabel}</span>
+			<span class="min-w-0 flex-1 truncate" dir="auto" title={triggerLabel}>{triggerLabel}</span>
 			<ChevronDown className="ms-1 size-2.5 shrink-0 self-center" strokeWidth="2.5" />
 		</div>
 	</button>

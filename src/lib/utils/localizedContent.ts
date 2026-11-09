@@ -178,42 +178,52 @@ export const resolveLocalizedPromptSuggestions = (
 		if (Array.isArray(prompts)) return prompts;
 	}
 
-	return (
-		fallback ?? [
-			{
-				title: [t('Help me study'), t('vocabulary for a college entrance exam')],
-				content: t(
-					"Help me study vocabulary: write a sentence for me to fill in the blank, and I'll try to pick the correct option."
-				)
-			},
-			{
-				title: [t('Give me ideas'), t("for what to do with my kids' art")],
-				content: t(
-					"What are 5 creative things I could do with my kids' art? I don't want to throw them away, but it's also so much clutter."
-				)
-			},
-			{
-				title: [t('Tell me a fun fact'), t('about the Roman Empire')],
-				content: t('Tell me a random fun fact about the Roman Empire')
-			},
-			{
-				title: [t('Show me a code snippet'), t("of a website's sticky header")],
-				content: t("Show me a code snippet of a website's sticky header in CSS and JavaScript.")
-			},
-			{
-				title: [t('Explain options trading'), t("if I'm familiar with buying and selling stocks")],
-				content: t(
-					"Explain options trading in simple terms if I'm familiar with buying and selling stocks."
-				)
-			},
-			{
-				title: [t('Overcome procrastination'), t('give me tips')],
-				content: t(
-					'Could you start by asking me about instances when I procrastinate the most and then give me some suggestions to overcome it?'
-				)
-			}
-		]
-	);
+	if (fallback) return fallback;
+
+	// Persian-first starters: short, ready-to-edit requests rather than topic cards. The
+	// source strings are English keys so the translation files stay the single source of truth.
+	if (getLocaleCandidates(locale)[0]?.split('-')[0].toLowerCase() === 'fa') {
+		return [
+			t('Write a formal email to follow up on an interview'),
+			t('Summarize this text in three points'),
+			t('Explain this topic with a simple example')
+		].map((content) => ({ title: [content, ''], content }));
+	}
+
+	return [
+		{
+			title: [t('Help me study'), t('vocabulary for a college entrance exam')],
+			content: t(
+				"Help me study vocabulary: write a sentence for me to fill in the blank, and I'll try to pick the correct option."
+			)
+		},
+		{
+			title: [t('Give me ideas'), t("for what to do with my kids' art")],
+			content: t(
+				"What are 5 creative things I could do with my kids' art? I don't want to throw them away, but it's also so much clutter."
+			)
+		},
+		{
+			title: [t('Tell me a fun fact'), t('about the Roman Empire')],
+			content: t('Tell me a random fun fact about the Roman Empire')
+		},
+		{
+			title: [t('Show me a code snippet'), t("of a website's sticky header")],
+			content: t("Show me a code snippet of a website's sticky header in CSS and JavaScript.")
+		},
+		{
+			title: [t('Explain options trading'), t("if I'm familiar with buying and selling stocks")],
+			content: t(
+				"Explain options trading in simple terms if I'm familiar with buying and selling stocks."
+			)
+		},
+		{
+			title: [t('Overcome procrastination'), t('give me tips')],
+			content: t(
+				'Could you start by asking me about instances when I procrastinate the most and then give me some suggestions to overcome it?'
+			)
+		}
+	];
 };
 
 export const resolveLocalizedModelPromptSuggestions = (model: any, locale?: string | null) => {

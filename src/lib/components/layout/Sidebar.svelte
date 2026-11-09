@@ -220,6 +220,14 @@
 
 	$: activeMenuItemId = getActiveMenuItemId($page.url.pathname);
 
+	// Notes, Workspace and Automations live in a secondary section; show its heading only when
+	// the user can actually see at least one of them (the access rules in isMenuItemVisible apply).
+	$: hasVisiblePinnedItems =
+		($user,
+		$config,
+		$settings,
+		pinnedItems.some((id) => getMenuItemMeta(id) && isMenuItemVisible(id)));
+
 	const initPinnedMenuSortable = () => {
 		const el = document.getElementById('pinned-menu-items-list');
 		if (el && !$mobile) {
@@ -1258,18 +1266,18 @@
 						<div class="px-1 flex justify-center text-gray-700 dark:text-gray-300">
 							<a
 								id="sidebar-new-chat-button"
-								class="group grow flex items-center space-x-2 rounded-xl px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-900 transition outline-none"
+								class="group grow flex items-center gap-2 rounded-xl px-3 py-2 min-h-10 pointer-coarse:min-h-11 font-medium bg-[var(--ashpazi-primary)] text-[var(--ashpazi-on-primary)] hover:bg-[var(--ashpazi-primary-hover)] shadow-sm transition focus-ring"
 								href="/"
 								draggable="false"
 								on:click={newChatHandler}
 								aria-label={$i18n.t('New Chat')}
 							>
 								<div class="self-center flex size-4 shrink-0 items-center justify-center">
-									<EditPencilIcon className=" size-4" strokeWidth="1.5" />
+									<EditPencilIcon className=" size-4" strokeWidth="1.75" />
 								</div>
 
 								<div class="flex flex-1 self-center translate-y-[0.5px]">
-									<div class=" self-center text-[0.8125rem] leading-5">{$i18n.t('New Chat')}</div>
+									<div class=" self-center text-sm leading-5">{$i18n.t('New Chat')}</div>
 								</div>
 
 								<HotkeyHint name="newChat" className=" hover-reveal " />
@@ -1279,68 +1287,24 @@
 						<div class="px-1 flex justify-center text-gray-700 dark:text-gray-300">
 							<button
 								id="sidebar-search-button"
-								class="group grow flex items-center space-x-2 rounded-xl px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-900 transition outline-none"
+								class="group grow flex items-center gap-2 rounded-xl px-3 py-1.5 pointer-coarse:min-h-11 hover:bg-gray-100 dark:hover:bg-gray-900 transition focus-ring"
 								on:click={() => {
 									showSearch.set(true);
 								}}
 								draggable="false"
-								aria-label={$i18n.t('Search')}
+								aria-label={$i18n.t('Search chats')}
 							>
 								<div class="self-center flex size-4 shrink-0 items-center justify-center">
 									<SearchIcon strokeWidth="1.5" className="size-4" />
 								</div>
 
 								<div class="flex flex-1 self-center translate-y-[0.5px]">
-									<div class=" self-center text-[0.8125rem] leading-5">{$i18n.t('Search')}</div>
+									<div class=" self-center text-[0.8125rem] leading-5">
+										{$i18n.t('Search chats')}
+									</div>
 								</div>
 								<HotkeyHint name="search" className=" hover-reveal " />
 							</button>
-						</div>
-
-						<div id="pinned-menu-items-list">
-							{#each pinnedItems as itemId (itemId)}
-								{@const meta = getMenuItemMeta(itemId)}
-								{#if meta && isMenuItemVisible(itemId)}
-									<div
-										class="px-1 flex justify-center text-gray-700 dark:text-gray-300"
-										data-id={itemId}
-									>
-										<a
-											id="sidebar-{itemId}-button"
-											class="grow flex items-center space-x-2 rounded-xl px-2 py-1.5 transition {itemId ===
-											activeMenuItemId
-												? ($settings?.highContrastMode ?? false)
-													? 'bg-black/[0.035] dark:bg-white/[0.06]'
-													: 'bg-black/[0.035] dark:bg-white/[0.045]'
-												: 'hover:bg-gray-100 dark:hover:bg-gray-900'}"
-											href={meta.href}
-											on:click={itemClickHandler}
-											draggable="false"
-											aria-label={$i18n.t(meta.label)}
-										>
-											<div class="self-center flex size-4 shrink-0 items-center justify-center">
-												{#if itemId === 'notes'}
-													<NotesIcon className="size-4" strokeWidth="1.5" />
-												{:else if itemId === 'workspace'}
-													<WorkspaceIcon className="size-4" strokeWidth="1.5" />
-												{:else if itemId === 'automations'}
-													<ClockIcon className="size-4" strokeWidth="1.5" />
-												{:else if itemId === 'calendar'}
-													<CalendarIcon className="size-4" strokeWidth="1.5" />
-												{:else if itemId === 'playground'}
-													<CodeIcon className="size-4" strokeWidth="1.5" />
-												{/if}
-											</div>
-
-											<div class="flex self-center translate-y-[0.5px]">
-												<div class=" self-center text-[0.8125rem] leading-5">
-													{$i18n.t(meta.label)}
-												</div>
-											</div>
-										</a>
-									</div>
-								{/if}
-							{/each}
 						</div>
 					</div>
 
@@ -1759,6 +1723,60 @@
 					<div
 						class=" sidebar-bg-gradient-to-t bg-linear-to-t from-gray-50 dark:from-gray-950 to-transparent from-50% pointer-events-none absolute inset-0 -z-10 -mt-6"
 					></div>
+					<div class="pb-1" role="group" aria-label={$i18n.t('Tools')}>
+						{#if hasVisiblePinnedItems}
+							<div
+								class="px-3 pt-1 pb-0.5 text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400"
+							>
+								{$i18n.t('Tools')}
+							</div>
+						{/if}
+						<div id="pinned-menu-items-list">
+							{#each pinnedItems as itemId (itemId)}
+								{@const meta = getMenuItemMeta(itemId)}
+								{#if meta && isMenuItemVisible(itemId)}
+									<div
+										class="px-1 flex justify-center text-gray-700 dark:text-gray-300"
+										data-id={itemId}
+									>
+										<a
+											id="sidebar-{itemId}-button"
+											class="grow flex items-center gap-2 rounded-xl px-3 py-1.5 pointer-coarse:min-h-11 transition focus-ring {itemId ===
+											activeMenuItemId
+												? ($settings?.highContrastMode ?? false)
+													? 'bg-black/[0.035] dark:bg-white/[0.06]'
+													: 'bg-black/[0.035] dark:bg-white/[0.045]'
+												: 'hover:bg-gray-100 dark:hover:bg-gray-900'}"
+											href={meta.href}
+											on:click={itemClickHandler}
+											draggable="false"
+											aria-label={$i18n.t(meta.label)}
+										>
+											<div class="self-center flex size-4 shrink-0 items-center justify-center">
+												{#if itemId === 'notes'}
+													<NotesIcon className="size-4" strokeWidth="1.5" />
+												{:else if itemId === 'workspace'}
+													<WorkspaceIcon className="size-4" strokeWidth="1.5" />
+												{:else if itemId === 'automations'}
+													<ClockIcon className="size-4" strokeWidth="1.5" />
+												{:else if itemId === 'calendar'}
+													<CalendarIcon className="size-4" strokeWidth="1.5" />
+												{:else if itemId === 'playground'}
+													<CodeIcon className="size-4" strokeWidth="1.5" />
+												{/if}
+											</div>
+
+											<div class="flex self-center translate-y-[0.5px]">
+												<div class=" self-center text-[0.8125rem] leading-5">
+													{$i18n.t(meta.label)}
+												</div>
+											</div>
+										</a>
+									</div>
+								{/if}
+							{/each}
+						</div>
+					</div>
 					<div class="flex flex-col">
 						{#if $user !== undefined && $user !== null}
 							<UserMenu

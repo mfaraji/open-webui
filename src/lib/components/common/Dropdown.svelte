@@ -323,6 +323,44 @@
 		}
 	}
 
+	const MENU_ITEM_SELECTOR =
+		'a[href], button:not([disabled]), [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';
+
+	const menuItems = () =>
+		contentEl
+			? Array.from(contentEl.querySelectorAll<HTMLElement>(MENU_ITEM_SELECTOR)).filter(
+					(el) => !el.closest('[inert], [hidden]') && el.getClientRects().length > 0
+				)
+			: [];
+
+	// Slotted content is plain buttons and links, so give assistive tech the menu semantics.
+	function markMenuItems() {
+		for (const el of menuItems()) {
+			if (!el.hasAttribute('role')) el.setAttribute('role', 'menuitem');
+		}
+	}
+
+	// Arrow keys, Home and End move between items; Tab keeps its normal meaning.
+	function handleMenuKeydown(event: KeyboardEvent) {
+		if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+		if (event.target instanceof Element && event.target.closest('input, textarea, select')) return;
+
+		const items = menuItems();
+		if (items.length === 0) return;
+
+		const current = items.indexOf(document.activeElement as HTMLElement);
+		let next = current;
+		if (event.key === 'ArrowDown') next = current < 0 ? 0 : (current + 1) % items.length;
+		else if (event.key === 'ArrowUp') next = current <= 0 ? items.length - 1 : current - 1;
+		else if (event.key === 'Home') next = 0;
+		else next = items.length - 1;
+
+		event.preventDefault();
+		items[next]?.focus();
+	}
+
+	$: if (show && contentEl) tick().then(markMenuItems);
+
 	/** Close the dropdown programmatically */
 	export function close() {
 		closeDropdown();
@@ -364,7 +402,6 @@
 </span>
 
 {#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div
 		use:portal
 		bind:this={contentEl}
@@ -379,6 +416,7 @@
 			if (closeOnSelect && !e.defaultPrevented) closeDropdown();
 		}}
 		on:pointerdown={(e) => e.stopPropagation()}
+		on:keydown={handleMenuKeydown}
 	>
 		<slot name="content" />
 	</div>
