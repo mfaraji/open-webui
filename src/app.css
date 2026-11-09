@@ -13,6 +13,16 @@
 	font-display: swap;
 }
 
+/* Persian-only alias of Vazirmatn: Arabic-script glyphs always come from the bundled font,
+   even on systems whose UI font also covers Persian, while Latin text keeps its own face. */
+@font-face {
+	font-family: 'VazirFa';
+	src: url('/assets/fonts/Vazirmatn-Variable.ttf');
+	font-weight: 100 900;
+	font-display: swap;
+	unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200D;
+}
+
 /* --app-text-scale is updated via the UI Scale slider (Interface.svelte) */
 :root {
 	--app-text-scale: 1;
@@ -22,6 +32,8 @@
 	--ashpazi-surface: #ffffff;
 	--ashpazi-elevated: #f1eee7;
 	--ashpazi-border: #e2ddd3;
+	--ashpazi-sidebar: #efeadf;
+	--ashpazi-sidebar-edge: #cfc8b8;
 	--ashpazi-text: #202624;
 	--ashpazi-muted: #5d6662;
 	--ashpazi-primary: #0f6b60;
@@ -44,7 +56,7 @@
 	--color-gray-100: #f1eee7;
 	--color-gray-200: #e2ddd3;
 	--color-gray-300: #cdc8bd;
-	--color-gray-400: #8c918c;
+	--color-gray-400: #56605a; /* 5.4:1 on the sidebar tint, 6.0:1 on the canvas */
 	--color-gray-500: #5d6662;
 	--color-gray-600: #475049;
 	--color-gray-700: #343c39;
@@ -99,6 +111,29 @@
 	--color-gray-950: #000;
 }
 
+/* Light mode only: the sidebar gets its own tint and a visible edge. */
+html:not(.dark) #sidebar {
+	background: var(--ashpazi-sidebar);
+	border-inline-end: 1px solid var(--ashpazi-sidebar-edge);
+	box-shadow: 2px 0 8px rgb(32 38 36 / 0.06);
+}
+html:not(.dark)[dir='rtl'] #sidebar {
+	box-shadow: -2px 0 8px rgb(32 38 36 / 0.06);
+}
+/* The sticky header/footer fades must blend into the tinted sidebar. */
+html:not(.dark) #sidebar :is(.sidebar-bg-gradient-to-b, .sidebar-bg-gradient-to-t) {
+	--tw-gradient-from: var(--ashpazi-sidebar);
+}
+
+/* Persian glyphs prefer the bundled font in every locale; Latin falls through unchanged. */
+html,
+body,
+button,
+input,
+textarea,
+select {
+	font-family: 'VazirFa', var(--font-sans);
+}
 html {
 	word-break: break-word;
 	font-variant-ligatures: no-contextual;
@@ -106,12 +141,14 @@ html {
 	font-size: calc(1rem * var(--app-text-scale, 1));
 }
 
+html:lang(fa),
 html:lang(fa) body,
 html:lang(fa) button,
 html:lang(fa) input,
 html:lang(fa) textarea,
 html:lang(fa) select {
-	font-family: var(--app-font-family, 'Vazirmatn'), 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+	font-family: 'VazirFa', var(--app-font-family, 'Vazirmatn'), 'Vazirmatn', ui-sans-serif, system-ui,
+		sans-serif;
 	line-height: 1.8;
 }
 

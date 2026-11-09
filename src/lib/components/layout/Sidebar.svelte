@@ -1281,7 +1281,7 @@
 									<div class=" self-center text-sm leading-5">{$i18n.t('New Chat')}</div>
 								</div>
 
-								<HotkeyHint name="newChat" className=" hover-reveal " />
+								<HotkeyHint name="newChat" className=" hover-reveal !text-[var(--ashpazi-on-primary)] " />
 							</a>
 						</div>
 
