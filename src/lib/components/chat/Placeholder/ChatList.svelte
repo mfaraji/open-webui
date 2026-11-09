@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import { chatTimeGroup } from '$lib/utils/persian';
 	import type { Writable } from 'svelte/store';
 
 	type ChatListI18n = {
@@ -183,13 +184,13 @@
 				!chat.active &&
 				(chat.last_read_at == null ||
 					(chat.updated_at != null && chat.updated_at > chat.last_read_at))}
-			{#if (idx === 0 || (idx > 0 && chat.time_range !== chatList[idx - 1].time_range)) && chat?.time_range}
+			{#if (idx === 0 || (idx > 0 && chatTimeGroup(chat, $i18n.language, $i18n.t).key !== chatTimeGroup(chatList[idx - 1], $i18n.language, $i18n.t).key)) && chat?.time_range}
 				<div
 					class="w-full text-xs text-gray-500 dark:text-gray-500 font-normal {idx === 0
 						? ''
 						: 'pt-5'} pb-2 px-2"
 				>
-					{$i18n.t(chat.time_range)}
+					{chatTimeGroup(chat, $i18n.language, $i18n.t).label}
 					<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
 							{$i18n.t('Today')}
 							{$i18n.t('Yesterday')}

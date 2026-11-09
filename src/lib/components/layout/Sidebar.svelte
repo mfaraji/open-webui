@@ -37,6 +37,7 @@
 		setChatReadAt
 	} from '$lib/stores/chatList';
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
+	import { chatTimeGroup } from '$lib/utils/persian';
 
 	const i18n: any = getContext('i18n');
 
@@ -1634,14 +1635,14 @@
 							<div class="pt-1.5">
 								{#if $chats}
 									{#each $chats as chat, idx (`chat-${chat?.id ?? idx}`)}
-										{#if idx === 0 || (idx > 0 && chat.time_range !== $chats[idx - 1].time_range)}
+										{#if idx === 0 || (idx > 0 && chatTimeGroup(chat, $i18n.language, $i18n.t).key !== chatTimeGroup($chats[idx - 1], $i18n.language, $i18n.t).key)}
 											<div
 												class="w-full ps-2.5 text-xs text-gray-500 dark:text-gray-500 font-normal {idx ===
 												0
 													? ''
 													: 'pt-4'} pb-1"
 											>
-												{$i18n.t(chat.time_range)}
+												{chatTimeGroup(chat, $i18n.language, $i18n.t).label}
 												<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
 							{$i18n.t('Today')}
 							{$i18n.t('Yesterday')}

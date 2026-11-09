@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import { chatTimeGroup } from '$lib/utils/persian';
 	import dayjs from 'dayjs';
 	import calendar from 'dayjs/plugin/calendar';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
@@ -124,13 +125,13 @@
 			</div>
 		{:else}
 			{#each chatList as chat, idx (chat.id)}
-				{#if chat.time_range && (idx === 0 || chat.time_range !== chatList[idx - 1]?.time_range)}
+				{#if chat.time_range && (idx === 0 || chatTimeGroup(chat, $i18n.language, $i18n.t).key !== chatTimeGroup(chatList[idx - 1], $i18n.language, $i18n.t).key)}
 					<div
 						class="w-full text-xs text-gray-500 dark:text-gray-500 font-normal {idx === 0
 							? ''
 							: 'pt-5'} pb-2 px-2"
 					>
-						{$i18n.t(chat.time_range)}
+						{chatTimeGroup(chat, $i18n.language, $i18n.t).label}
 					</div>
 				{/if}
 

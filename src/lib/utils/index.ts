@@ -5,6 +5,7 @@ import { parse as parseYaml } from 'yaml';
 import DOMPurify, { type UponSanitizeAttributeHookEvent } from 'dompurify';
 import { WEBUI_BASE_URL } from '$lib/constants';
 import { getActiveLocale } from '$lib/i18n/locale';
+import { localizeDigits } from '$lib/utils/digits';
 import type { FileNavOpenRequest } from '$lib/stores';
 import { normalizeDocumentTargetPage } from '$lib/utils/documentPreview';
 
@@ -18,6 +19,12 @@ dayjs.extend(relativeTime);
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
 dayjs.extend(localizedFormat);
+
+// Relative times ("13 hours ago") are UI-generated text, so Persian shows Persian digits.
+const baseFromNow = dayjs.prototype.fromNow;
+dayjs.prototype.fromNow = function (this: dayjs.Dayjs, withoutSuffix?: boolean) {
+	return localizeDigits(baseFromNow.call(this, withoutSuffix), this.locale());
+};
 
 import { TTS_RESPONSE_SPLIT } from '$lib/types';
 
