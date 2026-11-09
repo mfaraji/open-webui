@@ -17,6 +17,12 @@ from open_webui.models.shared_chats import SharedChat
 from open_webui.models.users import User
 from open_webui.utils.access_control import has_permission
 from open_webui.utils.auth import get_verified_user
+from open_webui.utils.search_text import (
+    column_normalized,
+    normalize_search_text,
+    normalize_with_offsets,
+    sql_normalized,
+)
 from pydantic import BaseModel, Field
 from sqlalchemy import BigInteger, and_, case, cast, func, literal, or_, select, text, union_all
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -53,7 +59,7 @@ class SearchResponse(BaseModel):
 
 
 def terms_for(query: str) -> list[str]:
-    return list(dict.fromkeys(query.lower().split()))[:12]
+    return list(dict.fromkeys(normalize_search_text(query).split()))[:12]
 
 
 def pattern(value: str) -> str:
@@ -62,8 +68,10 @@ def pattern(value: str) -> str:
 
 def excerpt(content: str, query: str, length: int = 200) -> str:
     content = content or ''
-    positions = [content.lower().find(term) for term in terms_for(query)]
-    position = min((p for p in positions if p >= 0), default=0)
+    # Find the match in normalized text, then map back so the excerpt slices the original.
+    folded, offsets = normalize_with_offsets(content)
+    positions = [offsets[i] for i in (folded.find(term) for term in terms_for(query)) if i >= 0]
+    position = min(positions, default=0)
     start = max(0, position - length // 4)
     return (
         ('…' if start else '')
@@ -77,9 +85,9 @@ def chat_passage(data: dict, query: str) -> tuple[str, str | None]:
     messages = list(history.values()) if history else data.get('messages') or []
     messages = [m for m in messages if isinstance(m, dict) and isinstance(m.get('content'), str)]
     terms = terms_for(query)
-    match = next((m for m in messages if terms and all(t in m['content'].lower() for t in terms)), None)
+    match = next((m for m in messages if terms and all(t in normalize_search_text(m['content']) for t in terms)), None)
     if match is None:
-        match = next((m for m in messages if any(t in m['content'].lower() for t in terms)), None)
+        match = next((m for m in messages if any(t in normalize_search_text(m['content']) for t in terms)), None)
     fallback = messages[-1] if messages else {}
     return (match or fallback).get('content', ''), match.get('id') if match else None
 
@@ -87,10 +95,17 @@ def chat_passage(data: dict, query: str) -> tuple[str, str | None]:
 def title_rank(title, query: str):
     if not query:
         return literal(3)
-    return case((func.lower(title) == query.lower(), 0), (title.ilike(pattern(query), escape='\\'), 1), else_=3)
+    folded = normalize_search_text(query)
+    return case(
+        (column_normalized(title) == folded, 0),
+        (column_normalized(title).like(pattern(folded), escape='\\'), 1),
+        else_=3,
+    )
 
 
 def message_match_sql(table: str, dialect: str, key: str):
+    sqlite_content = sql_normalized("m.value ->> 'content'")
+    postgres_content = sql_normalized("m.value->>'content'")
     # Identifiers are internal constants; all user input remains bound parameters.
     if dialect == 'sqlite':
         sources = [f"json_each({table}.chat, '$.history.messages')", f"json_each({table}.chat, '$.messages')"]
@@ -98,7 +113,7 @@ def message_match_sql(table: str, dialect: str, key: str):
             '('
             + ' OR '.join(
                 f"EXISTS (SELECT 1 FROM {source} AS m WHERE json_type(m.value, '$.content') = 'text' "
-                f"AND lower(m.value ->> 'content') LIKE :{key} ESCAPE '\\')"
+                f"AND {sqlite_content} LIKE :{key} ESCAPE '\\')"
                 for source in sources
             )
             + ')'
@@ -108,7 +123,7 @@ def message_match_sql(table: str, dialect: str, key: str):
         '('
         + ' OR '.join(
             f"EXISTS (SELECT 1 FROM {source} AS m WHERE json_typeof(m.value->'content') = 'string' "
-            f"AND lower(m.value->>'content') LIKE :{key} ESCAPE '\\')"
+            f"AND {postgres_content} LIKE :{key} ESCAPE '\\')"
             for source in sources
         )
         + ')'
@@ -233,11 +248,11 @@ async def search_workspace(  # noqa: C901 — keep permission scoping and source
             key = f'search_{index}'
             params[key] = pattern(term)
             content_match = (
-                body.ilike(pattern(term), escape='\\')
+                column_normalized(body).like(pattern(term), escape='\\')
                 if body is not None
                 else message_match_sql(model.__tablename__, dialect, key)
             )
-            stmt = stmt.where(or_(model.title.ilike(pattern(term), escape='\\'), content_match))
+            stmt = stmt.where(or_(column_normalized(model.title).like(pattern(term), escape='\\'), content_match))
         return stmt.params(**params)
 
     def append_result(id, result_kind, title, context, content, url, updated, shared, pinned=False, rank=3):
@@ -317,7 +332,7 @@ async def search_workspace(  # noqa: C901 — keep permission scoping and source
         stmt = select(Message, User.name).outerjoin(User, User.id == Message.user_id).where(Message.channel_id.in_(ids))
         stmt = stmt.where(sharing_filter(Message.user_id))
         for term in terms:
-            stmt = stmt.where(Message.content.ilike(pattern(term), escape='\\'))
+            stmt = stmt.where(column_normalized(Message.content).like(pattern(term), escape='\\'))
         sources['message'] = (
             Message,
             stmt,

@@ -19,6 +19,7 @@ from open_webui.models.chat_messages import ChatMessage, ChatMessages
 from open_webui.models.folders import Folders
 from open_webui.models.tags import Tag, TagModel, Tags
 from open_webui.utils.misc import get_output_text, sanitize_data_for_db, sanitize_text_for_db
+from open_webui.utils.search_text import column_normalized, normalize_search_text, sql_normalized
 from pydantic import BaseModel, ConfigDict, field_validator
 from sqlalchemy import (
     JSON,
@@ -50,15 +51,16 @@ CHAT_SEARCH_FILTER_PREFIXES = ('tag:', 'folder:', 'pinned:', 'archived:', 'share
 
 
 def chat_search_content_query(text: str) -> str:
-    words = sanitize_text_for_db(text).lower().strip().split()
+    words = normalize_search_text(sanitize_text_for_db(text)).strip().split()
     return ' '.join(word for word in words if not word.startswith(CHAT_SEARCH_FILTER_PREFIXES)).strip()
 
 
 def chat_search_terms(text: str) -> list[str]:
-    return list(dict.fromkeys(re.findall(r'[a-z0-9]+', text.lower())))
+    # Unicode word characters, so Persian and other non-ASCII words yield per-term matches too.
+    return list(dict.fromkeys(re.findall(r'\w+', normalize_search_text(text))))
 
 
-def chat_search_message_content_match_sql(dialect_name: str, key: str) -> str:
+def _chat_search_message_content_match_sql(dialect_name: str, key: str) -> str:
     if dialect_name == 'sqlite':
         return f"""
         (
@@ -102,6 +104,15 @@ def chat_search_message_content_match_sql(dialect_name: str, key: str) -> str:
         """
 
     raise NotImplementedError(f'Unsupported dialect: {dialect_name}')
+
+
+def chat_search_message_content_match_sql(dialect_name: str, key: str) -> str:
+    """Message-content match with Persian/Arabic variants and half-spaces folded on the column side."""
+    return re.sub(
+        r'LOWER\(([^()]*)\)',
+        lambda match: sql_normalized(match.group(1)),
+        _chat_search_message_content_match_sql(dialect_name, key),
+    )
 
 
 def chat_list_order(sort_by: str = 'updated_at', sort_dir: str = 'desc', user_id: str | None = None):
@@ -1588,7 +1599,7 @@ class ChatTable:
             if filter:
                 query_key = filter.get('query')
                 if query_key:
-                    stmt = stmt.filter(Chat.title.ilike(f'%{query_key}%'))
+                    stmt = stmt.filter(column_normalized(Chat.title).like(f'%{normalize_search_text(query_key)}%'))
 
                 order_by = filter.get('order_by')
                 direction = filter.get('direction')
@@ -1668,7 +1679,7 @@ class ChatTable:
             if filter:
                 query_key = filter.get('query')
                 if query_key:
-                    stmt = stmt.filter(Chat.title.ilike(f'%{query_key}%'))
+                    stmt = stmt.filter(column_normalized(Chat.title).like(f'%{normalize_search_text(query_key)}%'))
 
                 order_by = filter.get('order_by')
                 direction = filter.get('direction')
@@ -2147,7 +2158,7 @@ class ChatTable:
         """
         Filters chats based on a search query using Python, allowing pagination using skip and limit.
         """
-        search_text = sanitize_text_for_db(search_text).lower().strip()
+        search_text = normalize_search_text(sanitize_text_for_db(search_text)).strip()
 
         if not search_text:
             return await self.get_chat_list_by_user_id(
@@ -2219,7 +2230,7 @@ class ChatTable:
             exact_match_clause = None
             if phrase_query:
                 exact_match_clause = or_(
-                    Chat.title.ilike(bindparam('phrase_title_key')),
+                    column_normalized(Chat.title).like(bindparam('phrase_title_key')),
                     text(chat_search_message_content_match_sql(dialect_name, 'phrase_content_key')),
                 )
                 search_params.update(
@@ -2235,7 +2246,7 @@ class ChatTable:
                     content_key = f'term_content_key_{term_idx}'
                     term_clauses.append(
                         or_(
-                            Chat.title.ilike(bindparam(title_key)),
+                            column_normalized(Chat.title).like(bindparam(title_key)),
                             text(chat_search_message_content_match_sql(dialect_name, content_key)),
                         )
                     )
