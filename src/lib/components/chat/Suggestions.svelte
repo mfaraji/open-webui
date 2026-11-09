@@ -95,7 +95,7 @@
 					style="animation-delay: {idx * 45}ms"
 					on:click={() => onSelect({ type: 'prompt', data: prompt.content })}
 				>
-					<div class="flex flex-col text-left leading-snug">
+					<div class="flex flex-col text-start leading-snug">
 						{#if prompt.title && prompt.title[0] !== ''}
 							<div
 								class="text-sm font-normal group-hover:text-gray-950 dark:text-gray-300 dark:group-hover:text-white transition line-clamp-1"

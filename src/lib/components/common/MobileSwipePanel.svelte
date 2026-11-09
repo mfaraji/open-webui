@@ -30,11 +30,20 @@
 	let lastOpen: boolean | null = null;
 	let lastEnabled: boolean | null = null;
 
+	// The drawer slides from the inline-start edge: left in LTR, right in RTL.
+	let rtl = false;
+	const readDirection = () => {
+		rtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
+	};
+	readDirection();
+	// +1 maps physical finger movement onto "toward the open state" in LTR; -1 in RTL.
+	$: sign = rtl ? -1 : 1;
+
 	$: panelWidth = width || 245;
 	$: progress = enabled ? Math.max(0, Math.min(1, swipeProgress)) : 1;
 	$: visible = open || (enabled && mounted);
 	$: panelStyle = enabled
-		? `transform: translateX(${(progress - 1) * 100}%); transition: ${
+		? `transform: translateX(${(progress - 1) * 100 * sign}%); transition: ${
 				settling ? `transform ${SETTLE_MS}ms cubic-bezier(0.22, 1, 0.36, 1)` : 'none'
 			};`
 		: '';
@@ -90,7 +99,13 @@
 
 			if (isScrollable) {
 				const maxScrollLeft = node.scrollWidth - node.clientWidth;
-				return dx > 0 ? node.scrollLeft > 0 : node.scrollLeft < maxScrollLeft - 1;
+				// Normalize so 0 is the physical left end and max the physical right end;
+				// scrollLeft is zero-based at the right edge and negative in RTL elements.
+				const position =
+					window.getComputedStyle(node).direction === 'rtl'
+						? maxScrollLeft + node.scrollLeft
+						: node.scrollLeft;
+				return dx > 0 ? position > 0 : position < maxScrollLeft - 1;
 			}
 
 			element = element.parentElement;
@@ -178,7 +193,9 @@
 		const x = touch.clientX;
 
 		if (!open) {
-			if (x < UNSAFE_EDGE) {
+			// Keep clear of the system back-swipe on the inline-start edge.
+			const distanceFromStartEdge = rtl ? window.innerWidth - x : x;
+			if (distanceFromStartEdge < UNSAFE_EDGE) {
 				return;
 			}
 
@@ -208,7 +225,9 @@
 		}
 
 		const touch = e.touches[0];
-		const dx = touch.clientX - startX;
+		const rawDx = touch.clientX - startX;
+		// Positive dx always means "toward open", whatever the writing direction.
+		const dx = rawDx * sign;
 		const dy = touch.clientY - startY;
 		const absX = Math.abs(dx);
 		const absY = Math.abs(dy);
@@ -227,7 +246,7 @@
 				return;
 			}
 
-			if (absX > absY && canScrollHorizontally(e.target, dx)) {
+			if (absX > absY && canScrollHorizontally(e.target, rawDx)) {
 				cancelSwipe();
 				return;
 			}
@@ -245,7 +264,7 @@
 
 		const now = e.timeStamp;
 		const elapsed = Math.max(1, now - lastTime);
-		velocity = (touch.clientX - lastX) / elapsed;
+		velocity = ((touch.clientX - lastX) * sign) / elapsed;
 		lastX = touch.clientX;
 		lastTime = now;
 
@@ -281,7 +300,15 @@
 		}
 	};
 
+	let directionObserver: MutationObserver | null = null;
+
 	onMount(() => {
+		readDirection();
+		directionObserver = new MutationObserver(readDirection);
+		directionObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['dir']
+		});
 		window.addEventListener('touchstart', onTouchStart, { passive: true });
 		window.addEventListener('touchmove', onTouchMove, { passive: false });
 		window.addEventListener('touchend', onTouchEnd);
@@ -289,6 +316,7 @@
 	});
 
 	onDestroy(() => {
+		directionObserver?.disconnect();
 		window.removeEventListener('touchstart', onTouchStart);
 		window.removeEventListener('touchmove', onTouchMove);
 		window.removeEventListener('touchend', onTouchEnd);

@@ -748,7 +748,7 @@
 <div bind:this={folderElement} class="relative {className}" draggable={!folders[folderId]?.shared}>
 	{#if draggedOver}
 		<div
-			class="absolute top-0 left-0 w-full h-full rounded-xs bg-gray-100/50 dark:bg-gray-700/20 bg-opacity-50 dark:bg-opacity-10 z-50 pointer-events-none touch-none"
+			class="absolute top-0 start-0 w-full h-full rounded-xs bg-gray-100/50 dark:bg-gray-700/20 bg-opacity-50 dark:bg-opacity-10 z-50 pointer-events-none touch-none"
 		></div>
 	{/if}
 
@@ -808,7 +808,7 @@
 				</button>
 
 				<div
-					class="translate-y-[0.5px] flex min-w-0 flex-1 self-stretch items-center gap-1.5 pr-6 text-start"
+					class="translate-y-[0.5px] flex min-w-0 flex-1 self-stretch items-center gap-1.5 pe-6 text-start"
 				>
 					{#if edit}
 						<input
@@ -906,7 +906,7 @@
 
 				{#if isWritable}
 					<button
-						class="absolute z-10 right-2 hover-reveal self-center flex items-center dark:text-gray-300"
+						class="absolute z-10 end-2 hover-reveal self-center flex items-center dark:text-gray-300"
 						on:pointerdown={() => (openPreview = false)}
 					>
 						<FolderMenu
@@ -939,7 +939,7 @@
 		<div slot="content" class="w-full">
 			{#if (folders[folderId]?.childrenIds ?? []).length > 0 || chats !== null || hasMoreChats || chatsLoading}
 				<div
-					class="ml-3 pl-1 mt-[0.0625rem] flex flex-col overflow-y-auto scrollbar-hidden border-s border-gray-100 dark:border-gray-900"
+					class="ms-3 ps-1 mt-[0.0625rem] flex flex-col overflow-y-auto scrollbar-hidden border-s border-gray-100 dark:border-gray-900"
 				>
 					{#if folders[folderId]?.childrenIds}
 						{@const children = folders[folderId]?.childrenIds
@@ -1018,7 +1018,7 @@
 
 					{#if hasMoreChats}
 						<button
-							class="w-full px-2 py-0.5 text-left text-[0.6875rem] text-gray-400 transition hover:text-gray-700 disabled:cursor-not-allowed dark:text-gray-600 dark:hover:text-gray-300"
+							class="w-full px-2 py-0.5 text-start text-[0.6875rem] text-gray-400 transition hover:text-gray-700 disabled:cursor-not-allowed dark:text-gray-600 dark:hover:text-gray-300"
 							disabled={chatsLoading}
 							on:click={() => setFolderItems(true)}
 						>

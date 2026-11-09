@@ -1788,7 +1788,7 @@
 					{/if}
 					{#if autoScroll === false && history?.currentId}
 						<div
-							class=" absolute -top-12 left-0 right-0 flex justify-center z-30 pointer-events-none"
+							class=" absolute -top-12 start-0 end-0 flex justify-center z-30 pointer-events-none"
 						>
 							<button
 								aria-label={$i18n.t('Scroll to bottom')}
@@ -2016,9 +2016,9 @@
 							dir={contentDirection($settings?.chatDirection)}
 						>
 							{#if atSelectedModel !== undefined}
-								<div class="px-2.5 pt-2.5 text-left w-full flex flex-col z-10">
+								<div class="px-2.5 pt-2.5 text-start w-full flex flex-col z-10">
 									<div class="flex items-center justify-between w-full">
-										<div class="pl-[0.0625rem] flex items-center gap-2 text-sm dark:text-gray-500">
+										<div class="ps-[0.0625rem] flex items-center gap-2 text-sm dark:text-gray-500">
 											<img
 												alt={$i18n.t('model profile')}
 												class="size-3.5 max-w-[1.75rem] object-cover rounded-full"
@@ -2062,7 +2062,7 @@
 													/>
 													{#if selectedModelIds.length !== visionCapableModels.length}
 														<Tooltip
-															className=" absolute top-1 left-1"
+															className=" absolute top-1 start-1"
 															content={$i18n.t('{{ models }}', {
 																models: selectedModelIds
 																	.filter((id) => !visionCapableModels.includes(id))
@@ -2085,7 +2085,7 @@
 														</Tooltip>
 													{/if}
 												</div>
-												<div class=" absolute -top-1 -right-1">
+												<div class=" absolute -top-1 -end-1">
 													<button
 														class=" bg-white text-black border border-white rounded-full {($settings?.highContrastMode ??
 														false)
@@ -2141,7 +2141,7 @@
 								{#if prompt.split('\n').length > 2}
 									<button
 										type="button"
-										class="absolute top-2.5 right-3 z-20 p-1 rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
+										class="absolute top-2.5 end-3 z-20 p-1 rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
 										aria-label={$i18n.t('Expand input')}
 										on:click={() => {
 											showInputModal = true;
@@ -2152,7 +2152,7 @@
 								{/if}
 
 								<div
-									class="scrollbar-hidden rtl:text-right ltr:text-left bg-transparent dark:text-gray-100 outline-hidden w-full pb-0.5 px-1 resize-none h-fit max-h-96 overflow-auto {files.length ===
+									class="scrollbar-hidden rtl:text-end ltr:text-start bg-transparent dark:text-gray-100 outline-hidden w-full pb-0.5 px-1 resize-none h-fit max-h-96 overflow-auto {files.length ===
 									0
 										? atSelectedModel !== undefined
 											? 'pt-1'
@@ -2341,8 +2341,8 @@
 								</div>
 							</div>
 
-							<div class=" flex justify-between mt-0.5 mb-2 mx-0.5 max-w-full" dir="ltr">
-								<div class="ml-1 self-end flex items-center">
+							<div class=" flex justify-between mt-0.5 mb-2 mx-0.5 max-w-full">
+								<div class="ms-1 self-end flex items-center">
 									<InputMenu
 										onCompare={openComparison}
 										bind:files
@@ -2484,7 +2484,7 @@
 
 								<div class="flex flex-1 items-center min-w-0 overflow-x-auto scrollbar-none">
 									{#if selectedModelIds.length === 1 && $models.find((m) => m.id === selectedModelIds[0])?.has_user_valves}
-										<div class="ml-1 flex gap-1.5 shrink-0">
+										<div class="ms-1 flex gap-1.5 shrink-0">
 											<Tooltip content={$i18n.t('Valves')} placement="top">
 												<button
 													type="button"
@@ -2502,7 +2502,7 @@
 										</div>
 									{/if}
 
-									<div class="ml-1 flex gap-1.5 shrink-0">
+									<div class="ms-1 flex gap-1.5 shrink-0">
 										{#if (selectedToolIds ?? []).length > 0}
 											<Tooltip
 												content={$i18n.t('{{COUNT}} Available Tools', {
@@ -2710,7 +2710,7 @@
 									</div>
 								</div>
 
-								<div class="self-end flex space-x-1 mr-1 min-w-0 gap-[0.03125rem]">
+								<div class="self-end flex space-x-1 me-1 min-w-0 gap-[0.03125rem]">
 									<div class="flex min-w-0 max-w-[10rem] items-center sm:max-w-[13rem]">
 										<ModelSelector
 											bind:this={modelSelector}
@@ -2718,7 +2718,7 @@
 											showSetDefault={!history?.currentId}
 											placement="auto"
 											align="end"
-											triggerClassName="items-center gap-1.5 rounded-lg pl-2 pr-1.5 py-1 text-[0.8125rem] font-normal text-gray-600 transition-colors duration-100 hover:bg-gray-50/40 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800/40 dark:hover:text-gray-200"
+											triggerClassName="items-center gap-1.5 rounded-lg ps-2 pe-1.5 py-1 text-[0.8125rem] font-normal text-gray-600 transition-colors duration-100 hover:bg-gray-50/40 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800/40 dark:hover:text-gray-200"
 										/>
 									</div>
 									<ModelControls selectedModels={selectedModelIds} />
@@ -2755,7 +2755,7 @@
 												<Tooltip content={$i18n.t('Dictate')}>
 													<button
 														id="voice-input-button"
-														class=" text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 self-center mr-0.5"
+														class=" text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 self-center me-0.5"
 														type="button"
 														on:click={async () => {
 															try {

@@ -41,7 +41,7 @@
 			aria-hidden="true"
 		>
 			<span class="truncate">{options[0]?.[1].label}</span>
-			<span class="truncate text-right">{options.at(-1)?.[1].label}</span>
+			<span class="truncate text-end">{options.at(-1)?.[1].label}</span>
 		</div>
 		<div class="relative flex h-5 items-center">
 			<div class="pointer-events-none absolute inset-x-2.5 flex justify-between" aria-hidden="true">

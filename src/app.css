@@ -577,6 +577,12 @@ p[dir='auto'] {
 	unicode-bidi: plaintext;
 }
 
+/* An empty or neutral-only paragraph has no strong character, so plaintext falls back to
+   the CSS direction. Follow the UI direction there so the caret starts on the right in RTL. */
+html[dir='rtl'] .ProseMirror p {
+	direction: rtl;
+}
+
 :focus-visible:not(.ProseMirror):not([contenteditable='true']):not(input):not(textarea),
 .focus-ring:focus-visible {
 	outline: 2px solid var(--ashpazi-focus);
@@ -590,7 +596,6 @@ html.high-contrast :is(input, textarea, [contenteditable='true'], .ProseMirror):
 
 .ProseMirror p.is-editor-empty:first-child::before {
 	content: attr(data-placeholder);
-	float: left;
 	/* Below color is from tailwind, and has the proper contrast
 	text-gray-600 from: https://tailwindcss.com/docs/color */
 	color: #676767;
@@ -606,7 +611,7 @@ html.high-contrast.dark .ProseMirror p.is-editor-empty:first-child::before {
 
 .tiptap ul[data-type='taskList'] {
 	list-style: none;
-	margin-left: 0;
+	margin-inline-start: 0;
 	padding: 0;
 
 	li {
@@ -699,7 +704,7 @@ html.high-contrast.dark .ProseMirror p.is-editor-empty:first-child::before {
 
 .input-prose .tiptap ul[data-type='taskList'] {
 	list-style: none;
-	margin-left: 0;
+	margin-inline-start: 0;
 	padding: 0;
 
 	li {
@@ -927,17 +932,17 @@ body {
 /* Position the handle relative to each LI */
 .pm-li--with-handle {
 	position: relative;
-	margin-left: 0.75rem; /* make space for the handle */
+	margin-inline-start: 0.75rem; /* make space for the handle */
 }
 
 .tiptap ul[data-type='taskList'] .pm-list-drag-handle {
-	margin-left: 0px;
+	margin-inline-start: 0px;
 }
 
 /* The drag handle itself */
 .pm-list-drag-handle {
 	position: absolute;
-	left: -2.25rem; /* pull into the left gutter */
+	inset-inline-start: -2.25rem; /* pull into the start gutter */
 	top: 1px;
 	width: 1.125rem;
 	height: 1.125rem;
@@ -956,7 +961,7 @@ body {
 }
 
 .tiptap ul[data-type='taskList'] .pm-list-drag-handle {
-	left: -1rem; /* pull into the left gutter more to avoid the checkbox */
+	inset-inline-start: -1rem; /* pull into the start gutter more to avoid the checkbox */
 }
 
 .pm-list-drag-handle:active {

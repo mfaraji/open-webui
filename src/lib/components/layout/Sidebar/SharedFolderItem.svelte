@@ -71,7 +71,7 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div class="w-full group">
 		<button
-			class="w-full py-1 flex items-center gap-1 text-xs text-left font-normal
+			class="w-full py-1 flex items-center gap-1 text-xs text-start font-normal
 				text-gray-600 dark:text-gray-400
 				hover:text-gray-800 dark:hover:text-gray-300
 				transition-colors duration-100 cursor-pointer"
@@ -92,7 +92,7 @@
 			</div>
 
 			{#if folder.owner_name}
-				<div class="shrink-0 text-[0.625rem] text-gray-400 dark:text-gray-600 pr-1">
+				<div class="shrink-0 text-[0.625rem] text-gray-400 dark:text-gray-600 pe-1">
 					{folder.owner_name}
 				</div>
 			{/if}
@@ -109,7 +109,7 @@
 	</div>
 
 	{#if expanded}
-		<div class="pl-3">
+		<div class="ps-3">
 			{#if loading && !loaded}
 				<div class="flex gap-1 px-2 py-1.5" aria-label={$i18n.t('Loading')}>
 					<span class="size-1 rounded-full bg-gray-400 animate-pulse dark:bg-gray-600"></span>
@@ -142,7 +142,7 @@
 
 				{#if hasMoreChats}
 					<button
-						class="w-full px-2 py-0.5 text-left text-[0.6875rem] text-gray-400 transition hover:text-gray-700 disabled:cursor-not-allowed dark:text-gray-600 dark:hover:text-gray-300"
+						class="w-full px-2 py-0.5 text-start text-[0.6875rem] text-gray-400 transition hover:text-gray-700 disabled:cursor-not-allowed dark:text-gray-600 dark:hover:text-gray-300"
 						disabled={loading}
 						on:click={() => loadChats(true)}
 					>

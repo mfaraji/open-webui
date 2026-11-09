@@ -85,7 +85,7 @@
 		? 'pt-1.5'
 		: 'pt-0.5'} pb-1 -mb-12 flex flex-col items-center drag-region"
 >
-	<div class="flex items-center w-full {$mobile ? 'px-2.5' : 'pl-1.5 pr-1'}">
+	<div class="flex items-center w-full {$mobile ? 'px-2.5' : 'ps-1.5 pe-1'}">
 		<div
 			id="navbar-bg-gradient-to-b"
 			class="{chat?.id
@@ -96,7 +96,7 @@
 		<div class=" flex max-w-full w-full mx-auto bg-transparent">
 			<div class="flex items-center w-full max-w-full">
 				{#if $mobile && !$showSidebar}
-					<div class="mr-1 flex flex-none items-center self-center">
+					<div class="me-1 flex flex-none items-center self-center">
 						<Tooltip content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}>
 							<button
 								id="sidebar-toggle-button"
@@ -115,14 +115,14 @@
 				{/if}
 
 				<div
-					class="flex-1 min-w-0 overflow-hidden max-w-full mt-0.5 py-0.5 pl-1 {$showSidebar
-						? 'ml-1'
+					class="flex-1 min-w-0 overflow-hidden max-w-full mt-0.5 py-0.5 ps-1 {$showSidebar
+						? 'ms-1'
 						: ''}"
 				>
 					{#if chat?.id}
-						<div class="flex max-w-full min-w-0 items-center gap-2 mr-2">
+						<div class="flex max-w-full min-w-0 items-center gap-2 me-2">
 							<div
-								class="min-w-0 truncate py-1 text-left text-[0.9375rem] font-normal text-gray-700 dark:text-gray-300"
+								class="min-w-0 truncate py-1 text-start text-[0.9375rem] font-normal text-gray-700 dark:text-gray-300"
 							>
 								{title || chat?.chat?.title || $i18n.t('New Chat')}
 							</div>
@@ -170,7 +170,7 @@
 					{:else}
 						<div class="pointer-events-none invisible flex max-w-full min-w-0 items-center gap-2">
 							<div
-								class="min-w-0 truncate py-1 text-left text-[0.9375rem] font-normal text-gray-700 dark:text-gray-300"
+								class="min-w-0 truncate py-1 text-start text-[0.9375rem] font-normal text-gray-700 dark:text-gray-300"
 							>
 								{$i18n.t('New Chat')}
 							</div>
@@ -178,7 +178,7 @@
 					{/if}
 				</div>
 
-				<div class="lg:mr-1 flex flex-none items-center gap-3 self-center">
+				<div class="lg:me-1 flex flex-none items-center gap-3 self-center">
 					<!-- <div class="md:hidden flex self-center w-[0.0625rem] h-5 mx-2 bg-gray-300 dark:bg-stone-700" /> -->
 
 					{#if $user?.role === 'user' ? ($user?.permissions?.chat?.temporary ?? true) && !($user?.permissions?.chat?.temporary_enforced ?? false) : true}
@@ -279,7 +279,7 @@
 		</div>
 	{/if}
 
-	<div class="absolute top-[100%] left-0 right-0 h-fit">
+	<div class="absolute top-[100%] start-0 end-0 h-fit">
 		{#if !history.currentId && !$chatId && ($banners.length > 0 || ($config?.license_metadata?.type ?? null) === 'trial' || (($config?.license_metadata?.seats ?? null) !== null && $config?.user_count > $config?.license_metadata?.seats))}
 			<div class=" w-full z-30">
 				<div

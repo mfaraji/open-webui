@@ -180,7 +180,7 @@
 			message?.meta?.type === 'subagent') ||
 		(message?.meta?.internal === true && message?.meta?.type === 'timer')
 			? ''
-			: 'pl-1'}"
+			: 'ps-1'}"
 	>
 		{#if !compactPreview && (!($settings?.chatBubble ?? true) || !isOwn) && !(message?.meta?.internal === true && message?.meta?.type === 'subagent') && !(message?.meta?.internal === true && message?.meta?.type === 'timer')}
 			<div
@@ -252,7 +252,7 @@
 												imageClassName=" size-14 rounded-xl object-cover"
 											/>
 										</div>
-										<div class=" absolute -top-1 -right-1">
+										<div class=" absolute -top-1 -end-1">
 											<button
 												aria-label={$i18n.t('Remove file')}
 												class=" bg-white text-black border border-white rounded-full {($settings?.highContrastMode ??
@@ -376,7 +376,7 @@
 				<div class="w-full min-w-0">
 					<button
 						type="button"
-						class="flex w-full min-w-0 items-center gap-2 text-left text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+						class="flex w-full min-w-0 items-center gap-2 text-start text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
 						aria-expanded={timerExpanded}
 						on:click={() => {
 							timerExpanded = !timerExpanded;
@@ -399,7 +399,7 @@
 					</button>
 					{#if timerExpanded}
 						<div
-							class="mt-2 ml-3 whitespace-pre-wrap break-words border-l border-gray-100 pl-3 text-[0.78125rem] leading-relaxed text-gray-600 dark:border-white/10 dark:text-gray-400"
+							class="mt-2 ms-3 whitespace-pre-wrap break-words border-s border-gray-100 ps-3 text-[0.78125rem] leading-relaxed text-gray-600 dark:border-white/10 dark:text-gray-400"
 							dir={contentDirection($settings?.chatDirection)}
 						>
 							{message.content}
@@ -459,7 +459,7 @@
 					{#if message.timestamp}
 						<Tooltip
 							className="flex self-center {($settings?.chatBubble ?? true) && isOwn
-								? 'mr-1'
+								? 'me-1'
 								: 'order-last'}"
 							content={formatMessageTimestampFull(message.timestamp * 1000, $i18n.language)}
 							placement="bottom"
@@ -468,8 +468,8 @@
 								datetime={new Date(message.timestamp * 1000).toISOString()}
 								class="{compactPreview ? '' : 'hover-reveal'} {($settings?.chatBubble ?? true) &&
 								isOwn
-									? 'mr-1'
-									: 'ml-1 shrink-0 whitespace-nowrap'} text-[0.6875rem] tabular-nums text-gray-400 dark:text-gray-600 select-none"
+									? 'me-1'
+									: 'ms-1 shrink-0 whitespace-nowrap'} text-[0.6875rem] tabular-nums text-gray-400 dark:text-gray-600 select-none"
 							>
 								{formatMessageTimestamp(message.timestamp * 1000, $i18n.language)}
 							</time>

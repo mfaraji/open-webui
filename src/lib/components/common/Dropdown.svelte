@@ -143,7 +143,7 @@
 			contentEl.style.bottom = 'auto';
 		}
 
-		if (align === 'end') {
+		if (alignsToRightEdge()) {
 			let right = window.innerWidth - rect.right;
 			// Shift if overflowing left edge
 			const contentWidth = contentEl.offsetWidth || 0;
@@ -162,6 +162,12 @@
 			contentEl.style.left = `${Math.max(16, left)}px`;
 			contentEl.style.right = 'auto';
 		}
+	}
+
+	// `start`/`end` follow the writing direction: in RTL the menu's inline-end edge is the left one.
+	function alignsToRightEdge() {
+		const rtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
+		return (align === 'end') !== rtl;
 	}
 
 	function positionContentVisualViewport() {
@@ -195,7 +201,8 @@
 			? rect.top - constrainedHeight - sideOffset
 			: rect.bottom + sideOffset;
 		const contentWidth = contentEl.offsetWidth || 0;
-		const preferredLeft = align === 'end' && contentWidth ? rect.right - contentWidth : rect.left;
+		const preferredLeft =
+			alignsToRightEdge() && contentWidth ? rect.right - contentWidth : rect.left;
 		const maxLeft = contentWidth ? viewportRight - contentWidth - pad : preferredLeft;
 
 		contentEl.style.top = `${Math.max(

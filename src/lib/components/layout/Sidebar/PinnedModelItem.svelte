@@ -58,7 +58,7 @@
 		</a>
 
 		{#if mouseOver && shiftKey && onUnpin}
-			<div class="absolute right-5 top-2.5">
+			<div class="absolute end-5 top-2.5">
 				<div class=" flex items-center self-center space-x-1.5">
 					<Tooltip content={$i18n.t('Unpin')} className="flex items-center">
 						<button

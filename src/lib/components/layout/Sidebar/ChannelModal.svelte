@@ -215,7 +215,7 @@
 					<div class="flex flex-col w-full mt-2">
 						<div class=" mb-1 text-xs text-gray-500">
 							{$i18n.t('Channel Name')}
-							<span class="text-xs text-gray-200 dark:text-gray-800 ml-0.5">
+							<span class="text-xs text-gray-200 dark:text-gray-800 ms-0.5">
 								{#if type === 'dm'}{$i18n.t('Optional')}{/if}
 							</span>
 						</div>
@@ -259,7 +259,7 @@
 							<div class="text-xs text-gray-500">{$i18n.t('Webhooks')}</div>
 
 							<button
-								class="text-xs bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden text-left"
+								class="text-xs bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden text-start"
 								type="button"
 								on:click={() => {
 									showWebhooksModal = true;

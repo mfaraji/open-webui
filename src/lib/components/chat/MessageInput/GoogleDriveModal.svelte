@@ -191,7 +191,7 @@
 				{#each results as file (file.id)}
 					{@const selectable = canSelect(file)}
 					{@const transfer = transfers[file.id]}
-					<button type="button" class="mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 disabled:cursor-not-allowed disabled:opacity-50" disabled={!selectable} aria-pressed={Boolean(selected[file.id])} on:click={() => toggle(file)}>
+					<button type="button" class="mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-start hover:bg-gray-50 dark:hover:bg-gray-800/50 disabled:cursor-not-allowed disabled:opacity-50" disabled={!selectable} aria-pressed={Boolean(selected[file.id])} on:click={() => toggle(file)}>
 						<span class="flex size-4 shrink-0 items-center justify-center rounded border border-gray-400 bg-white text-xs text-white dark:border-gray-500 dark:bg-gray-900" class:bg-black={Boolean(selected[file.id])} class:dark:bg-white={Boolean(selected[file.id])} class:dark:text-black={Boolean(selected[file.id])} aria-hidden="true">{selected[file.id] ? '✓' : ''}</span>
 						<div class="min-w-0 flex-1">
 							<p class="truncate text-sm">{file.name}</p>

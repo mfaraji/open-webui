@@ -91,10 +91,10 @@
 >
 	{#if channel?.type === 'dm' && channel?.users}
 		{@const channelMembers = channel.users.filter((u) => u.id !== $user?.id)}
-		<div class="self-center mr-1">
-			<div class="flex ml-[0.0625rem] mr-0.5 relative">
+		<div class="self-center me-1">
+			<div class="flex ms-[0.0625rem] me-0.5 relative">
 				{#each channelMembers.slice(0, 2) as u, index}
-					<div class={index === 1 ? '-ml-2.5' : ''}>
+					<div class={index === 1 ? '-ms-2.5' : ''}>
 						<ProfilePreview user={u}>
 							<img
 								src={`${WEBUI_API_BASE_URL}/users/${u.id}/profile/image`}
@@ -106,7 +106,7 @@
 				{/each}
 
 				{#if channelMembers.length === 1}
-					<div class="absolute bottom-0 right-0 pointer-events-none">
+					<div class="absolute bottom-0 end-0 pointer-events-none">
 						<span class="relative flex size-2">
 							{#if channelMembers[0]?.is_active}
 								<span
@@ -153,10 +153,10 @@
 		<div class="flex min-w-0 flex-1 items-center gap-1">
 			{#if channel?.type === 'dm'}
 				{#if !channel?.users}
-					<UserIcon className="size-4 ml-1 mr-0.5" strokeWidth="1.5" />
+					<UserIcon className="size-4 ms-1 me-0.5" strokeWidth="1.5" />
 				{/if}
 			{:else}
-				<div class="size-4 shrink-0 justify-center flex items-center ml-1">
+				<div class="size-4 shrink-0 justify-center flex items-center ms-1">
 					{#if isPublicChannel(channel)}
 						<HashtagIcon className="size-3" strokeWidth="1.8" />
 					{:else}
@@ -165,7 +165,7 @@
 				</div>
 			{/if}
 
-			<div class="text-left self-center min-w-0 flex-1 pr-1 flex items-center gap-1.5">
+			<div class="text-start self-center min-w-0 flex-1 pe-1 flex items-center gap-1.5">
 				{#if channel?.name}
 					<span class="min-w-0 truncate">
 						{channel.name}
@@ -213,7 +213,7 @@
 		</div>
 	</a>
 
-	<div class="ml-0.5 mr-1 self-center shrink-0">
+	<div class="ms-0.5 me-1 self-center shrink-0">
 		<ChannelMenu
 			{channel}
 			sidebar

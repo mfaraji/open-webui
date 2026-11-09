@@ -1113,7 +1113,7 @@
 
 					<canvas id="camera-canvas" style="display:none;" />
 
-					<div class=" absolute top-4 md:top-8 left-4">
+					<div class=" absolute top-4 md:top-8 start-4">
 						<button
 							type="button"
 							aria-label={$i18n.t('Stop camera')}

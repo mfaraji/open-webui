@@ -113,7 +113,7 @@
 												{getVariableLabel(variable)}
 
 												{#if variables[variable]?.required ?? false}
-													<span class="ml-1 text-gray-500">* {$i18n.t('required')}</span>
+													<span class="ms-1 text-gray-500">* {$i18n.t('required')}</span>
 												{/if}
 											</div>
 										</div>
@@ -257,7 +257,7 @@
 
 														<input
 															type="text"
-															class=" py-1 text-sm dark:text-gray-300 bg-transparent outline-hidden text-right"
+															class=" py-1 text-sm dark:text-gray-300 bg-transparent outline-hidden text-end"
 															placeholder={$i18n.t('Enter value')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"
@@ -333,7 +333,7 @@
 
 														<input
 															type="text"
-															class=" w-full py-1 text-left text-sm dark:text-gray-300 bg-transparent outline-hidden"
+															class=" w-full py-1 text-start text-sm dark:text-gray-300 bg-transparent outline-hidden"
 															placeholder={$i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"

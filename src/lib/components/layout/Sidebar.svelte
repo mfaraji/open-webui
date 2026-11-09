@@ -574,6 +574,42 @@
 		draggedOver = false; // Reset draggedOver status after drop
 	};
 
+	// Mobile drawer focus handling: focus moves into the drawer when it opens and goes
+	// back to whatever opened it when it closes, so keyboard users keep their place.
+	let drawerWasOpen = false;
+	let drawerOpener: HTMLElement | null = null;
+
+	const closeDrawerWithEscape = (e: KeyboardEvent) => {
+		if (e.key !== 'Escape' || !$mobile || !$showSidebar || e.defaultPrevented) return;
+		// Let open menus, dialogs and the search modal handle their own Escape first.
+		if (document.querySelector('[role="dialog"], [role="menu"], [data-melt-dropdown-menu]')) return;
+		e.preventDefault();
+		showSidebar.set(false);
+	};
+
+	$: handleDrawerFocus($mobile && $showSidebar);
+
+	const handleDrawerFocus = async (open: boolean) => {
+		if (open === drawerWasOpen) return;
+		drawerWasOpen = open;
+
+		if (open) {
+			drawerOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+			await tick();
+			navElement
+				?.querySelector<HTMLElement>('a[href], button:not([disabled]), [tabindex="0"]')
+				?.focus({ preventScroll: true });
+		} else {
+			await tick();
+			const target =
+				drawerOpener && document.contains(drawerOpener)
+					? drawerOpener
+					: document.getElementById('sidebar-toggle-button');
+			target?.focus({ preventScroll: true });
+			drawerOpener = null;
+		}
+	};
+
 	const onKeyDown = (e) => {
 		if (e.key === 'Shift') {
 			shiftKey = true;
@@ -641,7 +677,8 @@
 	};
 
 	const resizeSidebarHandler = (endClientX: number) => {
-		const dx = endClientX - startClientX;
+		// The sidebar grows toward the content, which is rightward in LTR and leftward in RTL.
+		const dx = (endClientX - startClientX) * (document.documentElement.dir === 'rtl' ? -1 : 1);
 		const newSidebarWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth + dx));
 
 		sidebarWidth.set(newSidebarWidth);
@@ -891,6 +928,7 @@
 />
 
 <svelte:window
+	on:keydown={closeDrawerWithEscape}
 	on:pointermove={(e) => {
 		if (!isResizing) return;
 		if (activePointerId !== null && e.pointerId !== activePointerId) return;
@@ -915,8 +953,8 @@
 	{#if visible}
 		<div
 			class=" {$isApp
-				? ' ml-[4.5rem] md:ml-0'
-				: ''} fixed md:hidden z-40 top-0 right-0 left-0 bottom-0 bg-black w-full min-h-screen h-screen flex justify-center overflow-hidden overscroll-contain {progress >
+				? ' ms-[4.5rem] md:ms-0'
+				: ''} fixed md:hidden z-40 top-0 end-0 start-0 bottom-0 bg-black w-full min-h-screen h-screen flex justify-center overflow-hidden overscroll-contain {progress >
 			0.02
 				? ''
 				: 'pointer-events-none'}"
@@ -1100,7 +1138,7 @@
 										/>
 
 										{#if $config?.features?.enable_user_status}
-											<div class="absolute -bottom-0.5 -right-0.5">
+											<div class="absolute -bottom-0.5 -end-0.5">
 												<span class="relative flex size-2.5">
 													<span
 														class="relative inline-flex size-2.5 rounded-full {true
@@ -1136,10 +1174,10 @@
 					? 'bg-gray-50 dark:bg-gray-950 z-50'
 					: 'bg-transparent z-0 pointer-events-none'
 				: `bg-gray-50 dark:bg-gray-950 z-50 ${$showSidebar ? '' : 'pointer-events-none'}`} {$isApp
-				? `ml-[4.5rem] md:ml-0 `
+				? `ms-[4.5rem] md:ms-0 `
 				: $mobile
 					? ''
-					: ''} shrink-0 text-gray-700 dark:text-gray-300 text-[0.8125rem] leading-5 fixed top-0 left-0 overflow-x-hidden
+					: ''} shrink-0 text-gray-700 dark:text-gray-300 text-[0.8125rem] leading-5 fixed top-0 start-0 overflow-x-hidden
         "
 			style={$mobile
 				? panelStyle
@@ -1593,7 +1631,7 @@
 										name={$i18n.t('Pinned')}
 									>
 										<div
-											class="ml-3 pl-1 mt-[0.0625rem] flex flex-col overflow-y-auto scrollbar-hidden border-s border-gray-100 dark:border-gray-900 text-gray-700 dark:text-gray-300"
+											class="ms-3 ps-1 mt-[0.0625rem] flex flex-col overflow-y-auto scrollbar-hidden border-s border-gray-100 dark:border-gray-900 text-gray-700 dark:text-gray-300"
 										>
 											{#each $pinnedChats as chat, idx (`pinned-chat-${chat?.id ?? idx}`)}
 												<ChatItem
@@ -1634,7 +1672,7 @@
 									{#each $chats as chat, idx (`chat-${chat?.id ?? idx}`)}
 										{#if idx === 0 || (idx > 0 && chat.time_range !== $chats[idx - 1].time_range)}
 											<div
-												class="w-full pl-2.5 text-xs text-gray-500 dark:text-gray-500 font-normal {idx ===
+												class="w-full ps-2.5 text-xs text-gray-500 dark:text-gray-500 font-normal {idx ===
 												0
 													? ''
 													: 'pt-4'} pb-1"
@@ -1733,7 +1771,7 @@
 									class=" flex items-center rounded-xl py-1.5 px-1.5 w-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
 									aria-label={$i18n.t('User menu')}
 								>
-									<div class=" self-center mr-3 relative flex-shrink-0">
+									<div class=" self-center me-3 relative flex-shrink-0">
 										<img
 											src={`${WEBUI_API_BASE_URL}/users/${$user?.id}/profile/image`}
 											class="size-5.5 object-cover rounded-full"
@@ -1742,7 +1780,7 @@
 										/>
 
 										{#if $config?.features?.enable_user_status}
-											<div class="absolute -bottom-0.5 -right-0.5">
+											<div class="absolute -bottom-0.5 -end-0.5">
 												<span class="relative flex size-2.5">
 													<span
 														class="relative inline-flex size-2.5 rounded-full {true
@@ -1764,13 +1802,13 @@
 
 		{#if !$mobile && visible}
 			<div
-				class="relative flex items-center justify-center group border-r border-gray-50 dark:border-gray-850/30 hover:border-gray-200 dark:hover:border-gray-800 transition z-20 bg-transparent p-0 appearance-none"
+				class="relative flex items-center justify-center group border-e border-gray-50 dark:border-gray-850/30 hover:border-gray-200 dark:hover:border-gray-800 transition z-20 bg-transparent p-0 appearance-none"
 				id="sidebar-resizer"
 				on:pointerdown={resizeStartHandler}
 				role="separator"
 			>
 				<div
-					class=" absolute -left-1.5 -right-1.5 -top-0 -bottom-0 z-20 cursor-col-resize bg-transparent"
+					class=" absolute -inset-x-1.5 -top-0 -bottom-0 z-20 cursor-col-resize bg-transparent"
 					style="touch-action: none;"
 				></div>
 			</div>

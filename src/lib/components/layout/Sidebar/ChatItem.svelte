@@ -522,22 +522,22 @@
 {#snippet chatItemContent()}
 	<!-- Loading spinner for active chat (left side) -->
 	{#if active}
-		<div class="shrink-0 self-center pr-2">
+		<div class="shrink-0 self-center pe-2">
 			<Spinner className="size-3" />
 		</div>
 	{/if}
 
 	<div class="flex self-center flex-1 w-full min-w-0">
 		{#if unread}
-			<div class="shrink-0 self-center pr-2.5 flex transition-opacity duration-300">
+			<div class="shrink-0 self-center pe-2.5 flex transition-opacity duration-300">
 				<div class="size-1.5 bg-sky-500 rounded-full"></div>
 			</div>
 		{/if}
 		<div
 			dir="auto"
-			class="text-left self-center overflow-hidden w-full h-5 truncate {unread
+			class="text-start self-center overflow-hidden w-full h-5 truncate {unread
 				? 'font-normal text-gray-800 dark:text-gray-200'
-				: ''} {($mobile || showInlineActions) && !readonly ? 'pr-12' : ''}"
+				: ''} {($mobile || showInlineActions) && !readonly ? 'pe-12' : ''}"
 		>
 			{title}
 		</div>
@@ -545,7 +545,7 @@
 
 	<!-- Time ago indicator -->
 	{#if (updatedAt ?? createdAt) && !showInlineActions && !($mobile && !readonly)}
-		<div class="shrink-0 self-center text-[0.625rem] text-gray-400 dark:text-gray-500 pl-2">
+		<div class="shrink-0 self-center text-[0.625rem] text-gray-400 dark:text-gray-500 ps-2">
 			{formatTimeAgo((updatedAt ?? createdAt) as number)}
 		</div>
 	{/if}
@@ -615,7 +615,7 @@
 			<input
 				id="chat-title-input-{id}"
 				bind:value={chatTitle}
-				class=" bg-transparent w-full outline-hidden mr-10"
+				class=" bg-transparent w-full outline-hidden me-10"
 				placeholder={generating ? $i18n.t('Generating...') : ''}
 				disabled={generating}
 				on:keydown={chatTitleInputKeydownHandler}
@@ -639,7 +639,7 @@
 	{:else}
 		<div id="sidebar-chat-item" class={chatItemClass}>
 			{#if ownerUserId || participants.length > 1}
-				<div class="flex items-center self-center shrink-0 mr-2">
+				<div class="flex items-center self-center shrink-0 me-2">
 					<ChatParticipants
 						{participants}
 						owner={ownerUserId ? { id: ownerUserId, name: ownerName } : null}
@@ -702,9 +702,9 @@
 				? 'selected'
 				: showInlineActions
 					? 'selected'
-					: 'hover-reveal'} absolute {className === 'pr-2'
-				? 'right-[0.5rem]'
-				: 'right-1'} inset-y-0 mr-1.5 flex items-center"
+					: 'hover-reveal'} absolute {className === 'pe-2'
+				? 'end-[0.5rem]'
+				: 'end-1'} inset-y-0 me-1.5 flex items-center"
 		>
 			{#if confirmEdit}
 				<div

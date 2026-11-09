@@ -902,7 +902,7 @@
 		on:click={toggleOpen}
 	>
 		<div
-			class="flex w-full min-w-0 text-left px-0.5 bg-transparent {triggerClassName} justify-between {($settings?.highContrastMode ??
+			class="flex w-full min-w-0 text-start px-0.5 bg-transparent {triggerClassName} justify-between {($settings?.highContrastMode ??
 			false)
 				? 'dark:placeholder-gray-100 placeholder-gray-800'
 				: 'placeholder-gray-400'}"
@@ -916,7 +916,7 @@
 			}}
 		>
 			<span class="min-w-0 flex-1 truncate">{triggerLabel}</span>
-			<ChevronDown className="ml-1 size-2.5 shrink-0 self-center" strokeWidth="2.5" />
+			<ChevronDown className="ms-1 size-2.5 shrink-0 self-center" strokeWidth="2.5" />
 		</div>
 	</button>
 
@@ -933,7 +933,7 @@
 			>
 				<slot>
 					{#if searchEnabled}
-						<div class="my-0.5 flex ml-2 mr-0.5 h-[1.6875rem] shrink-0 items-center gap-2">
+						<div class="my-0.5 flex ms-2 me-0.5 h-[1.6875rem] shrink-0 items-center gap-2">
 							<Search className=" size-3.5 shrink-0" strokeWidth="2" />
 
 							<input
@@ -1109,7 +1109,7 @@
 										role="option"
 										aria-selected={selectedModelIdx === filteredItems.length + targetIndex}
 										data-arrow-selected={selectedModelIdx === filteredItems.length + targetIndex}
-										class="flex h-8 w-full select-none items-center gap-2 rounded-xl px-2 text-left text-[0.8125rem] font-normal text-gray-700 outline-hidden transition-colors duration-75 dark:text-gray-100 {selectedModelIdx ===
+										class="flex h-8 w-full select-none items-center gap-2 rounded-xl px-2 text-start text-[0.8125rem] font-normal text-gray-700 outline-hidden transition-colors duration-75 dark:text-gray-100 {selectedModelIdx ===
 										filteredItems.length + targetIndex
 											? ($settings?.highContrastMode ?? false)
 												? 'bg-gray-200 dark:bg-gray-800'
@@ -1161,7 +1161,7 @@
 										role="option"
 										aria-selected={selectedModelIdx === filteredItems.length + targetIndex}
 										data-arrow-selected={selectedModelIdx === filteredItems.length + targetIndex}
-										class="focus-ring flex h-8 w-full cursor-pointer select-none items-center gap-2 rounded-xl px-2 text-left text-[0.8125rem] font-normal text-gray-700 outline-hidden transition-colors duration-75 dark:text-gray-100 {($settings?.highContrastMode ??
+										class="focus-ring flex h-8 w-full cursor-pointer select-none items-center gap-2 rounded-xl px-2 text-start text-[0.8125rem] font-normal text-gray-700 outline-hidden transition-colors duration-75 dark:text-gray-100 {($settings?.highContrastMode ??
 										false)
 											? 'hover:bg-gray-200 dark:hover:bg-gray-800'
 											: 'hover:bg-gray-50/40 dark:hover:bg-gray-800/40'} {selectedModelIdx ===
@@ -1198,7 +1198,7 @@
 								placement="top-start"
 							>
 								<div
-									class="flex h-8 w-full select-none items-center gap-2 rounded-xl px-2 text-left text-[0.8125rem] font-normal text-gray-700 outline-hidden transition-colors duration-75 dark:text-gray-100"
+									class="flex h-8 w-full select-none items-center gap-2 rounded-xl px-2 text-start text-[0.8125rem] font-normal text-gray-700 outline-hidden transition-colors duration-75 dark:text-gray-100"
 								>
 									<Spinner className="size-3 shrink-0 text-gray-400 dark:text-gray-500" />
 									<div class="min-w-0 flex-1 truncate">

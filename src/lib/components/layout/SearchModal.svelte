@@ -289,7 +289,7 @@
 			</div>
 		{/if}
 		{#if panel === 'types'}
-			<div class="absolute top-10 right-12 z-10" data-search-panel>
+			<div class="absolute top-10 end-12 z-10" data-search-panel>
 				<DropdownMenu className="min-w-32 font-normal"
 					><button
 						on:click={() => {
@@ -311,7 +311,7 @@
 			</div>
 		{/if}
 		{#if panel === 'filters'}
-			<div class="absolute right-2 top-10 z-10 w-52 max-w-[calc(100%-1rem)]" data-search-panel>
+			<div class="absolute end-2 top-10 z-10 w-52 max-w-[calc(100%-1rem)]" data-search-panel>
 				<DropdownMenu>
 					<DropdownSub maxWidth={208} contentClass="w-52 font-normal">
 						<button
@@ -319,7 +319,7 @@
 							class="focus-ring flex h-[1.6875rem] w-full items-center gap-2 rounded-xl px-2 text-[0.8125rem] font-normal"
 						>
 							<span>{$i18n.t('View')}</span>
-							<span class="ml-auto truncate text-gray-500 dark:text-gray-400"
+							<span class="ms-auto truncate text-gray-500 dark:text-gray-400"
 								>{$i18n.t(
 									sharing === 'all'
 										? 'All'
@@ -341,7 +341,7 @@
 								}}
 							>
 								{$i18n.t(option.label)}
-								{#if sharing === option.value}<Check className="ml-auto size-3.5" />{/if}
+								{#if sharing === option.value}<Check className="ms-auto size-3.5" />{/if}
 							</button>
 						{/each}
 					</DropdownSub>
@@ -354,7 +354,7 @@
 							class="focus-ring flex h-[1.6875rem] w-full items-center gap-2 rounded-xl px-2 text-[0.8125rem] font-normal"
 						>
 							<span>{$i18n.t('Location')}</span>
-							<span class="ml-auto truncate text-gray-500 dark:text-gray-400"
+							<span class="ms-auto truncate text-gray-500 dark:text-gray-400"
 								>{scopeName || $i18n.t('Everywhere')}</span
 							>
 							<ChevronRight className="size-3.5 shrink-0 text-gray-400" />
@@ -368,7 +368,7 @@
 								input.focus();
 							}}
 						>
-							{$i18n.t('Everywhere')}{#if !scope}<Check className="ml-auto size-3.5" />{/if}
+							{$i18n.t('Everywhere')}{#if !scope}<Check className="ms-auto size-3.5" />{/if}
 						</button>
 						{#each [{ kind: 'folder', label: 'Folders' }, { kind: 'channel', label: 'Channels' }] as group}
 							{#if scopes.some((item) => item.kind === group.kind)}
@@ -389,7 +389,7 @@
 										}}
 									>
 										<span class="min-w-0 truncate">{item.name}</span>{#if scope === item.id}<Check
-												className="ml-auto size-3.5 shrink-0"
+												className="ms-auto size-3.5 shrink-0"
 											/>{/if}
 									</button>
 								{/each}
@@ -440,7 +440,7 @@
 							aria-selected={selectedIndex === index}
 							tabindex="-1"
 							data-index={index}
-							class="flex min-h-8 cursor-pointer items-center gap-2 rounded-xl px-2 py-1 text-left font-normal transition-colors duration-75 {selectedIndex ===
+							class="flex min-h-8 cursor-pointer items-center gap-2 rounded-xl px-2 py-1 text-start font-normal transition-colors duration-75 {selectedIndex ===
 							index
 								? selectionClass
 								: 'hover:bg-gray-50/40 dark:hover:bg-gray-800/40'}"
@@ -521,7 +521,7 @@
 			</div>
 			{#if preview && selected}
 				<section
-					class="flex w-full min-w-0 flex-col border-gray-100/60 sm:w-[45%] sm:border-l dark:border-gray-800/40"
+					class="flex w-full min-w-0 flex-col border-gray-100/60 sm:w-[45%] sm:border-s dark:border-gray-800/40"
 					aria-label={$i18n.t('Result preview')}
 				>
 					<div
@@ -566,14 +566,14 @@
 				</section>
 			{/if}
 		</div>
-		{#if panel === 'actions'}<div class="absolute bottom-9 right-1 z-10" data-search-panel>
+		{#if panel === 'actions'}<div class="absolute bottom-9 end-1 z-10" data-search-panel>
 				<DropdownMenu className="min-w-56 font-normal"
 					>{#if selected}<button
 							on:click={() => {
 								panel = null;
 								open();
 							}}
-							>{$i18n.t('Open result')}<span class="ml-auto text-xs text-gray-400">↵</span></button
+							>{$i18n.t('Open result')}<span class="ms-auto text-xs text-gray-400">↵</span></button
 						><button
 							on:click={() => {
 								setPreview(!preview);
@@ -591,7 +591,7 @@
 		<div
 			class="flex h-8 shrink-0 items-center justify-between gap-2 border-t border-gray-100/60 px-2 dark:border-gray-800/40"
 		>
-			<span class="min-w-0 truncate pl-1 text-[0.6875rem] text-gray-500 dark:text-gray-400"
+			<span class="min-w-0 truncate ps-1 text-[0.6875rem] text-gray-500 dark:text-gray-400"
 				>{selected ? selected.context : $i18n.t('Workspace search')}</span
 			>
 			<div class="flex shrink-0 items-center gap-0.5">

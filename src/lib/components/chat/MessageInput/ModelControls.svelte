@@ -43,7 +43,7 @@
 	$: permitted =
 		$user?.role === 'admin' ||
 		(($user?.permissions?.chat?.controls ?? true) && ($user?.permissions?.chat?.params ?? true));
-	$: rowClass = `focus-ring flex h-[1.6875rem] w-full cursor-pointer select-none items-center gap-2 rounded-xl px-2 text-left text-[0.8125rem] font-normal text-gray-700 outline-hidden transition-colors duration-75 dark:text-gray-100 ${$settings?.highContrastMode ? 'hover:bg-gray-200! dark:hover:bg-gray-800!' : 'hover:bg-gray-50/40! dark:hover:bg-gray-800/40!'}`;
+	$: rowClass = `focus-ring flex h-[1.6875rem] w-full cursor-pointer select-none items-center gap-2 rounded-xl px-2 text-start text-[0.8125rem] font-normal text-gray-700 outline-hidden transition-colors duration-75 dark:text-gray-100 ${$settings?.highContrastMode ? 'hover:bg-gray-200! dark:hover:bg-gray-800!' : 'hover:bg-gray-50/40! dark:hover:bg-gray-800/40!'}`;
 	$: selectedClass = $settings?.highContrastMode
 		? 'bg-gray-200 dark:bg-gray-800'
 		: 'bg-gray-50/70 dark:bg-gray-800/60';
@@ -74,7 +74,7 @@
 </script>
 
 {#snippet summary(model: Model, key: string, control: ModelControl)}
-	<span class="min-w-0 flex-1 truncate text-left">{control.label}</span>
+	<span class="min-w-0 flex-1 truncate text-start">{control.label}</span>
 	<span class="max-w-[55%] truncate text-gray-500 dark:text-gray-400">
 		{control.options[modelControls[model.id]?.[key] ?? control.default ?? '']?.label ??
 			$i18n.t('Default')}
@@ -96,7 +96,7 @@
 		class={`${rowClass} ${!modelControls[model.id]?.[key] ? selectedClass : ''}`}
 		on:click={() => select(model.id, key, '')}
 	>
-		<span class="min-w-0 flex-1 truncate text-left">
+		<span class="min-w-0 flex-1 truncate text-start">
 			{$i18n.t('Default')}{#if control.options[control.default ?? '']?.label}{' · '}{control
 					.options[control.default ?? ''].label}{/if}
 		</span>
@@ -111,7 +111,7 @@
 			class={`${rowClass} ${modelControls[model.id]?.[key] === value ? selectedClass : ''}`}
 			on:click={() => select(model.id, key, value)}
 		>
-			<span class="min-w-0 flex-1 truncate text-left">{option.label}</span>
+			<span class="min-w-0 flex-1 truncate text-start">{option.label}</span>
 			{#if modelControls[model.id]?.[key] === value}<Check className="size-3! shrink-0" />{/if}
 		</button>
 	{/each}
@@ -123,7 +123,7 @@
 			<button
 				type="button"
 				aria-label={$i18n.t('Model controls')}
-				class="mr-2 flex shrink-0 items-center justify-center text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+				class="me-2 flex shrink-0 items-center justify-center text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
 			>
 				<Knobs className="size-4" />
 			</button>

@@ -484,7 +484,7 @@
 		? ' bg-gray-100/50 dark:bg-gray-850/50'
 		: 'bg-indigo-300/10 dark:bg-indigo-500/10 '} rounded-full flex justify-between {className}"
 >
-	<div class="flex items-center mr-1">
+	<div class="flex items-center me-1">
 		<button
 			type="button"
 			class="p-1.5
@@ -505,7 +505,7 @@
 	</div>
 
 	<div
-		class="flex flex-1 self-center items-center justify-between ml-2 mx-1 overflow-hidden h-6"
+		class="flex flex-1 self-center items-center justify-between ms-2 mx-1 overflow-hidden h-6"
 		dir="rtl"
 	>
 		<div
@@ -529,7 +529,7 @@
 	</div>
 
 	<div class="flex">
-		<div class="  mx-1.5 pr-1 flex justify-center items-center">
+		<div class="  mx-1.5 pe-1 flex justify-center items-center">
 			<div
 				class="text-sm
         
