@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { localizeDigits } from '$lib/utils/digits';
 	import { getContext, onDestroy, tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
@@ -420,7 +421,7 @@
 						>{loading
 							? $i18n.t('Searching…')
 							: results.length
-								? `${results.length}${hasMore ? '+' : ''}`
+								? localizeDigits(`${results.length}${hasMore ? '+' : ''}`, $i18n.language)
 								: ''}</span
 					>
 				</div>

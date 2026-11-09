@@ -2160,7 +2160,7 @@
 								{/if}
 
 								<div
-									class="scrollbar-hidden rtl:text-end ltr:text-start bg-transparent dark:text-gray-100 outline-hidden w-full pb-0.5 px-1 resize-none h-fit max-h-96 overflow-auto {files.length ===
+									class="scrollbar-hidden rtl:text-end ltr:text-start bg-transparent dark:text-gray-100 outline-hidden w-full pb-0.5 px-1 resize-none h-fit max-h-[min(24rem,40dvh)] overflow-auto {files.length ===
 									0
 										? atSelectedModel !== undefined
 											? 'pt-1'
