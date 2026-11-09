@@ -13,6 +13,8 @@
 	import type { i18n as i18nType, t } from 'i18next';
 
 	const i18n = getContext<Writable<i18nType>>('i18n');
+	const contextCompactions =
+		getContext<Writable<Record<string, 'in_progress' | { error: string }>>>('contextCompactions');
 
 	const dispatch = createEventDispatcher();
 
@@ -27,7 +29,8 @@
 		settings,
 		temporaryChatEnabled,
 		TTSWorker,
-		user
+		user,
+		visibleControls
 	} from '$lib/stores';
 	import { contentDirection } from '$lib/i18n/locale';
 	import { synthesizeOpenAISpeech } from '$lib/apis/audio';
@@ -66,6 +69,7 @@
 	import Citations from './Citations.svelte';
 	import CodeExecutions from './CodeExecutions.svelte';
 	import ContentRenderer from './ContentRenderer.svelte';
+	import ContextCompactionLabel from './ContextCompactionLabel.svelte';
 	import { KokoroWorker } from '$lib/workers/KokoroWorker';
 	import FileItem from '$lib/components/common/FileItem.svelte';
 	import FollowUps from './ResponseMessage/FollowUps.svelte';
@@ -74,6 +78,7 @@
 	import RegenerateMenu from './ResponseMessage/RegenerateMenu.svelte';
 	import StatusHistory from './ResponseMessage/StatusHistory.svelte';
 	import FullHeightIframe from '$lib/components/common/FullHeightIframe.svelte';
+	import MCPApp from '$lib/components/chat/Messages/MCPApp.svelte';
 	import OutputEditView from './OutputEditView.svelte';
 	import { getOutputText, replaceOutputMessageText, type OutputItem } from './structuredOutput';
 
@@ -81,8 +86,10 @@
 		user_id?: string;
 		id: string;
 		model: string;
+		modelName?: string;
 		content: string;
 		output?: OutputItem[];
+		contextSummary?: string;
 		files?: { type: string; url: string }[];
 		timestamp: number;
 		role: string;
@@ -128,11 +135,13 @@
 			usage?: unknown;
 		};
 		annotation?: { type: string; rating: number };
+		meta?: { response_ended_at?: number };
 	}
 
 	export let chatId = '';
 	export let history;
 	export let messageId;
+	$: compactionStatus = $contextCompactions?.[messageId];
 	export let selectedModels = [];
 
 	let messageSource = history.messages[messageId];
@@ -144,6 +153,8 @@
 		? contentDirection($settings?.chatDirection)
 		: undefined;
 
+	$: canBranch =
+		!message.model?.startsWith('agent:') && !selectedModels.some((id) => id.startsWith('agent:'));
 	$: if (history.messages) {
 		const source = history.messages[messageId];
 		if (source) {
@@ -191,6 +202,7 @@
 	export let readOnly = false;
 	export let shareMode: 'continue' | null = null;
 	export let allowDelete = true;
+	export let allowToolApproval: boolean = false;
 	export let compactPreview = false;
 	export let editCodeBlock = true;
 	export let topPadding = false;
@@ -207,19 +219,26 @@
 	// configured name keeps it. Attribution always comes from the model stored on this reply.
 	$: localizedModelName = assistantName(model, $i18n.language, (key) => $i18n.t(key));
 	$: modelDetails = modelWithId(model, message.model, $i18n.language);
-	$: usageText = message.usage
+	$: hasUsage =
+		Object.keys(message.usage ?? {}).some((key) => key !== 'incomplete') &&
+		$visibleControls['chat.usage'];
+	$: usageText = hasUsage
 		? JSON.stringify(message.usage, null, 2)
 				.replace(/"([^(")"]+)":/g, '$1:')
 				.slice(1, -1)
 				.split('\n')
 				.map((line) => line.slice(2))
 				.map((line) => (line.endsWith(',') ? line.slice(0, -1) : line))
+				.map((line) =>
+					line.replace(/: (\d+)$/, (_, count) => `: ${Number(count).toLocaleString($i18n.language)}`)
+				)
 				.join('\n')
 		: '';
 	$: detailsTooltip =
 		`<div>${escapeHtmlText($i18n.t('Model'))}: <b>${escapeHtmlText(modelDetails)}</b></div>` +
 		(usageText ? `<pre>${sanitizeResponseContent(usageText)}</pre>` : '');
 	$: model = $models.find((m) => m.id === message.model);
+	$: responseTimestamp = message?.meta?.response_ended_at ?? message?.timestamp;
 
 	$: statusEntries = message?.statusHistory ?? [...(message?.status ? [message?.status] : [])];
 	$: hasVisibleStatus =
@@ -231,6 +250,7 @@
 	$: hasResponseContent = Boolean((message.content ?? '').trim() || message.output?.length);
 
 	let edit = false;
+	let editButtonElement: HTMLButtonElement;
 	let editedContent = '';
 	let editedOutput: any[] | null = null;
 	let editTextAreaElement: HTMLTextAreaElement;
@@ -292,7 +312,7 @@
 
 		speaking = true;
 
-		if ($config.audio.tts.engine === '') {
+		if ($config.audio.tts.engine === '' && $settings.audio?.tts?.engine !== 'browser-kokoro') {
 			let voices = [];
 			const getVoicesLoop = setInterval(() => {
 				voices = speechSynthesis.getVoices();
@@ -362,6 +382,7 @@
 
 				for (const [, sentence] of messageContentParts.entries()) {
 					if (signal.aborted) return;
+					if (!speaking) break;
 
 					const url = await $TTSWorker
 						.generate({ text: sentence, voice: voiceId })
@@ -382,6 +403,7 @@
 			} else {
 				for (const [, sentence] of messageContentParts.entries()) {
 					if (signal.aborted) return;
+					if (!speaking) break;
 
 					const res = await synthesizeOpenAISpeech(localStorage.token, voiceId, sentence).catch(
 						(error) => {
@@ -476,6 +498,7 @@
 	};
 
 	const saveAsCopyHandler = async () => {
+		if (!canBranch) return;
 		if (editedOutput) {
 			editMessage(message.id, { output: editedOutput });
 		} else {
@@ -495,11 +518,13 @@
 		editedContent = '';
 		editedOutput = null;
 		await tick();
+		editButtonElement?.focus();
 	};
 
 	let feedbackLoading = false;
 
 	const feedbackHandler = async (rating: number | null = null, details: object | null = null) => {
+		if (feedbackLoading && rating !== null) return;
 		feedbackLoading = true;
 		console.log('Feedback', rating, details);
 
@@ -737,6 +762,10 @@
 				</Name>
 			{/if}
 
+			{#if message.contextSummary && !compactionStatus}
+				<ContextCompactionLabel summary={message.contextSummary} {compactPreview} />
+			{/if}
+
 			<div>
 				<div
 					class="chat-{message.role} w-full min-w-full"
@@ -778,13 +807,17 @@
 							>
 								{#each message.embeds as embed, idx}
 									<div class="my-2 w-full" id={`${message.id}-embeds-${idx}`}>
-										<FullHeightIframe
-											src={embed}
-											allowScripts={true}
-											allowForms={$settings?.iframeSandboxAllowForms ?? true}
-											allowSameOrigin={$settings?.iframeSandboxAllowSameOrigin ?? false}
-											allowPopups={true}
-										/>
+										{#if typeof embed === 'object' && embed?.type === 'mcp_app'}
+											{#key JSON.stringify(embed)}<MCPApp app={embed} />{/key}
+										{:else if typeof embed === 'string'}
+											<FullHeightIframe
+												src={embed}
+												allowScripts={true}
+												allowForms={$settings?.iframeSandboxAllowForms ?? true}
+												allowSameOrigin={$settings?.iframeSandboxAllowSameOrigin ?? false}
+												allowPopups={true}
+											/>
+										{/if}
 									</div>
 								{/each}
 							</div>
@@ -808,9 +841,10 @@
 								{:else}
 									<!-- Legacy textarea for messages without output -->
 									<textarea
+										aria-label={$i18n.t('Message')}
 										id="message-edit-{message.id}"
 										bind:this={editTextAreaElement}
-										class=" bg-transparent outline-hidden focus-visible:outline-none! w-full resize-none text-[0.9375rem]"
+										class=" bg-transparent outline-hidden focus-visible:outline-none! w-full resize-none text-[0.90625rem]"
 										bind:value={editedContent}
 										on:input={(e) => {
 											const messagesContainer = document.getElementById('messages-container');
@@ -839,15 +873,17 @@
 
 								<div class=" mt-2 flex justify-between text-sm font-normal">
 									<div>
-										<button
-											id="save-new-message-button"
-											class="flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-gray-100 px-2.5 text-xs font-normal text-gray-800 transition hover:bg-gray-100/70 disabled:opacity-60 dark:bg-gray-850 dark:text-white dark:hover:bg-gray-850/60"
-											on:click={() => {
-												saveAsCopyHandler();
-											}}
-										>
-											{$i18n.t('Save As Copy')}
-										</button>
+										{#if canBranch}
+											<button
+												id="save-new-message-button"
+												class="flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-gray-100 px-2.5 text-xs font-normal text-gray-800 transition hover:bg-gray-100/70 disabled:opacity-60 dark:bg-gray-850 dark:text-white dark:hover:bg-gray-850/60"
+												on:click={() => {
+													saveAsCopyHandler();
+												}}
+											>
+												{$i18n.t('Save As Copy')}
+											</button>
+										{/if}
 									</div>
 
 									<div class="flex space-x-1.5">
@@ -903,6 +939,8 @@
 									{topPadding}
 									done={message?.done ?? false}
 									allowEmbeds={!readOnly}
+									allowToolApproval={allowToolApproval &&
+										(!message.user_id || message.user_id === $user?.id)}
 									{model}
 									onTaskClick={async (e) => {
 										console.log(e);
@@ -944,8 +982,12 @@
 								/>
 							{/if}
 
-							{#if !message.done && !message.error && (hasResponseContent || !hasVisibleStatus)}
-								<div class="text-[0.9375rem] leading-relaxed">
+							{#if compactionStatus}
+								<ContextCompactionLabel status={compactionStatus} {compactPreview} />
+							{/if}
+
+							{#if !compactionStatus && !message.done && !message.error && (hasResponseContent || !hasVisibleStatus)}
+								<div class="text-[0.90625rem] leading-relaxed">
 									<span
 										class="inline-block w-[0.125rem] h-3.5 bg-gray-400 dark:bg-gray-500 ms-0.5 animate-cursor-pulse align-text-bottom"
 									></span>
@@ -973,18 +1015,18 @@
 					</div>
 				</div>
 
-				{#if compactPreview && message.timestamp}
+				{#if compactPreview && responseTimestamp}
 					<div class="mt-0.5 flex justify-start whitespace-nowrap text-gray-600 dark:text-gray-500">
 						<Tooltip
 							className="flex self-center"
-							content={formatMessageTimestampFull(message.timestamp * 1000, $i18n.language)}
+							content={formatMessageTimestampFull(responseTimestamp * 1000, $i18n.language)}
 							placement="bottom"
 						>
 							<time
-								datetime={new Date(message.timestamp * 1000).toISOString()}
+								datetime={new Date(responseTimestamp * 1000).toISOString()}
 								class="ms-1 shrink-0 whitespace-nowrap text-[0.6875rem] tabular-nums text-gray-400 dark:text-gray-600 select-none"
 							>
-								{formatMessageTimestamp(message.timestamp * 1000, $i18n.language)}
+								{formatMessageTimestamp(responseTimestamp * 1000, $i18n.language)}
 							</time>
 						</Tooltip>
 					</div>
@@ -1031,7 +1073,7 @@
 								<div class="flex self-center min-w-fit" dir="ltr">
 									<button
 										aria-label={$i18n.t('Previous message')}
-										class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition"
+										class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition previous-message-button"
 										on:click={() => {
 											showPreviousMessage(message);
 										}}
@@ -1044,6 +1086,7 @@
 											class="text-sm flex justify-center font-normal self-center dark:text-gray-500 min-w-fit"
 										>
 											<input
+												aria-label={$i18n.t('Message number')}
 												id="message-index-input-{message.id}"
 												type="number"
 												value={siblings.indexOf(message.id) + 1}
@@ -1085,7 +1128,7 @@
 									{/if}
 
 									<button
-										class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition"
+										class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition next-message-button"
 										on:click={() => {
 											showNextMessage(message);
 										}}
@@ -1102,6 +1145,7 @@
 										<Tooltip content={$i18n.t('Edit')} placement="bottom">
 											<button
 												aria-label={$i18n.t('Edit')}
+												bind:this={editButtonElement}
 												class="{isLastMessage || ($settings?.highContrastMode ?? false)
 													? 'visible'
 													: 'hover-reveal'} inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-gray-400 hover:text-gray-600 transition"
@@ -1220,11 +1264,15 @@
 									</Tooltip>
 								{/if}
 
-								{#if message.usage || message.model}
-									<Tooltip content={detailsTooltip} placement="bottom">
+								{#if message.model || hasUsage}
+									{#if hasUsage}
+										<span id="usage-{message.id}" hidden>{usageText}</span>
+									{/if}
+									<Tooltip content={detailsTooltip} allowHTML={true} placement="bottom">
 										<button
 											type="button"
 											aria-label={`${$i18n.t('Message details')}: ${modelDetails}`}
+											aria-describedby={hasUsage ? 'usage-' + message.id : undefined}
 											class=" {isLastMessage || ($settings?.highContrastMode ?? false)
 												? 'visible'
 												: 'hover-reveal'} inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-gray-400 hover:text-gray-600 transition whitespace-pre-wrap"
@@ -1264,7 +1312,7 @@
 									</Tooltip>
 								{/if}
 
-								{#if $user && message.done && forkHandler && ($user?.role === 'admin' || ($user?.permissions?.chat?.import ?? true))}
+								{#if $user && message.done && forkHandler && ($user?.role === 'admin' || ($user?.permissions?.chat?.import ?? true)) && $visibleControls['chat.fork']}
 									<Tooltip content={$i18n.t('Fork chat')} placement="bottom">
 										<button
 											aria-label={$i18n.t('Fork chat')}
@@ -1329,8 +1377,8 @@
 													message?.annotation?.rating ?? ''
 												).toString() === '1'
 													? 'bg-gray-100 dark:bg-gray-800'
-													: ''} dark:hover:text-gray-400 hover:text-gray-600 transition disabled:cursor-progress disabled:hover:bg-transparent"
-												disabled={feedbackLoading}
+													: ''} dark:hover:text-gray-400 hover:text-gray-600 transition aria-disabled:cursor-progress aria-disabled:hover:bg-transparent"
+												aria-disabled={feedbackLoading}
 												on:click={async (e) => {
 													e.stopPropagation();
 													await feedbackHandler(1);
@@ -1373,8 +1421,8 @@
 													message?.annotation?.rating ?? ''
 												).toString() === '-1'
 													? 'bg-gray-100 dark:bg-gray-800'
-													: ''} dark:hover:text-gray-400 hover:text-gray-600 transition disabled:cursor-progress disabled:hover:bg-transparent"
-												disabled={feedbackLoading}
+													: ''} dark:hover:text-gray-400 hover:text-gray-600 transition aria-disabled:cursor-progress aria-disabled:hover:bg-transparent"
+												aria-disabled={feedbackLoading}
 												on:click={async (e) => {
 													e.stopPropagation();
 													await feedbackHandler(-1);
@@ -1409,7 +1457,7 @@
 										</Tooltip>
 									{/if}
 
-									{#if isLastMessage && ($user?.role === 'admin' || ($user?.permissions?.chat?.continue_response ?? true))}
+									{#if canBranch && isLastMessage && ($user?.role === 'admin' || ($user?.permissions?.chat?.continue_response ?? true))}
 										<Tooltip content={$i18n.t('Continue Response')} placement="bottom">
 											<button
 												aria-label={$i18n.t('Continue Response')}
@@ -1443,7 +1491,7 @@
 								{/if}
 
 								{#if (!readOnly && (!message.user_id || message.user_id === $user?.id)) || shareMode === 'continue'}
-									{#if $user?.role === 'admin' || ($user?.permissions?.chat?.regenerate_response ?? true)}
+									{#if canBranch && ($user?.role === 'admin' || ($user?.permissions?.chat?.regenerate_response ?? true))}
 										{#if $settings?.regenerateMenu ?? true}
 											<button
 												type="button"
@@ -1667,17 +1715,17 @@
 										{/if}
 									{/if}
 
-									{#if message.timestamp}
+									{#if responseTimestamp}
 										<Tooltip
 											className="flex self-center"
-											content={formatMessageTimestampFull(message.timestamp * 1000, $i18n.language)}
+											content={formatMessageTimestampFull(responseTimestamp * 1000, $i18n.language)}
 											placement="bottom"
 										>
 											<time
-												datetime={new Date(message.timestamp * 1000).toISOString()}
+												datetime={new Date(responseTimestamp * 1000).toISOString()}
 												class="hover-reveal ms-1 shrink-0 whitespace-nowrap text-[0.6875rem] tabular-nums text-gray-400 dark:text-gray-600 select-none"
 											>
-												{formatMessageTimestamp(message.timestamp * 1000, $i18n.language)}
+												{formatMessageTimestamp(responseTimestamp * 1000, $i18n.language)}
 											</time>
 										</Tooltip>
 									{/if}
@@ -1700,7 +1748,7 @@
 						{/key}
 					{/if}
 
-					{#if (isLastMessage || ($settings?.keepFollowUpPrompts ?? false)) && message.done && !readOnly && (message?.followUps ?? []).length > 0}
+					{#if (isLastMessage || (canBranch && ($settings?.keepFollowUpPrompts ?? false))) && message.done && !readOnly && (message?.followUps ?? []).length > 0}
 						<div class="my-2.5" in:fade={{ duration: 100 }}>
 							<FollowUps
 								followUps={message?.followUps}

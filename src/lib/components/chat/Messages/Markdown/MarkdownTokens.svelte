@@ -25,6 +25,7 @@
 	const { saveAs } = fileSaver;
 
 	import { type Token, type Tokens } from 'marked';
+	import { v4 as uuidv4 } from 'uuid';
 	import { copyToClipboard, unescapeHtml } from '$lib/utils';
 	import { resolveChatMessageToolCall } from '$lib/apis/chats';
 
@@ -79,6 +80,8 @@
 	export let onSourceClick: Function = () => {};
 	export let onToolCallResolved: Function = () => {};
 
+	const taskId = `task-${uuidv4()}`;
+
 	const headerComponent = (depth: number) => {
 		return 'h' + depth;
 	};
@@ -107,6 +110,14 @@
 		};
 
 		for (const token of tokenList) {
+			if (
+				token.type === 'details' &&
+				token.attributes?.type === 'tool_calls' &&
+				token.attributes?.hidden === 'true' &&
+				!['pending', 'queued', 'requires_approval'].includes(token.attributes?.status ?? '')
+			) {
+				continue;
+			}
 			if (isGroupableDetailToken(token)) {
 				detailGroup.push(token);
 			} else {
@@ -151,7 +162,7 @@
 	};
 
 	$: detailButtonClassName = `py-0.5 ${
-		compactPreview ? 'text-xs' : 'text-[0.9375rem]'
+		compactPreview ? 'text-xs' : 'text-[0.90625rem]'
 	} text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition`;
 
 	$: displayTokens = getDisplayTokens(tokens);
@@ -306,6 +317,7 @@
 			<div class=" absolute top-1 end-1.5 z-20 hover-reveal flex gap-0.5">
 				<Tooltip content={$i18n.t('Copy')}>
 					<button
+						aria-label={$i18n.t('Copy')}
 						class="p-1 rounded-lg bg-transparent transition"
 						on:click={(e) => {
 							e.stopPropagation();
@@ -318,6 +330,7 @@
 
 				<Tooltip content={$i18n.t('Export to CSV')}>
 					<button
+						aria-label={$i18n.t('Export to CSV')}
 						class="p-1 rounded-lg bg-transparent transition"
 						on:click={(e) => {
 							e.stopPropagation();
@@ -344,6 +357,7 @@
 					{allowEmbeds}
 					{save}
 					{preview}
+					{onPreview}
 					{compactPreview}
 					{editCodeBlock}
 					{onTaskClick}
@@ -357,13 +371,18 @@
 		{#if token.ordered}
 			<ol start={token.start || 1} dir="auto">
 				{#each token.items as item, itemIdx}
-					<li dir="auto" class="text-start">
+					<li
+						dir="auto"
+						class="text-start"
+						id={item?.task ? `${taskId}-${tokenIdx}-${itemIdx}` : undefined}
+					>
 						{#if item?.task}
 							<input
 								class="task-checkbox translate-y-[1px] -translate-x-1 [&:dir(rtl)]:translate-x-1 flex-shrink-0"
 								type="checkbox"
 								disabled={markdown?.document && !$taskEnabled}
 								checked={item.checked}
+								aria-labelledby={`${taskId}-${tokenIdx}-${itemIdx}`}
 								on:change={(e) => {
 									(markdown?.onTaskClick ?? onTaskClick)({
 										id: id,
@@ -388,6 +407,7 @@
 							{allowEmbeds}
 							{save}
 							{preview}
+							{onPreview}
 							{compactPreview}
 							{editCodeBlock}
 							{onTaskClick}
@@ -400,13 +420,18 @@
 		{:else}
 			<ul dir="auto" class="">
 				{#each token.items as item, itemIdx}
-					<li dir="auto" class="text-start {item?.task ? 'relative list-none' : ''}">
+					<li
+						dir="auto"
+						class="text-start {item?.task ? 'relative list-none' : ''}"
+						id={item?.task ? `${taskId}-${tokenIdx}-${itemIdx}` : undefined}
+					>
 						{#if item?.task}
 							<input
 								class="task-checkbox"
 								type="checkbox"
 								disabled={markdown?.document && !$taskEnabled}
 								checked={item.checked}
+								aria-labelledby={`${taskId}-${tokenIdx}-${itemIdx}`}
 								on:change={(e) => {
 									(markdown?.onTaskClick ?? onTaskClick)({
 										id: id,
@@ -431,6 +456,7 @@
 									{allowEmbeds}
 									{save}
 									{preview}
+									{onPreview}
 									{compactPreview}
 									{editCodeBlock}
 									{onTaskClick}
@@ -449,6 +475,7 @@
 								{allowEmbeds}
 								{save}
 								{preview}
+								{onPreview}
 								{compactPreview}
 								{editCodeBlock}
 								{onTaskClick}
@@ -509,6 +536,7 @@
 									{allowEmbeds}
 									{save}
 									{preview}
+									{onPreview}
 									{compactPreview}
 									{editCodeBlock}
 									{onTaskClick}
@@ -570,6 +598,7 @@
 						{allowEmbeds}
 						{save}
 						{preview}
+						{onPreview}
 						{compactPreview}
 						{editCodeBlock}
 						{onTaskClick}

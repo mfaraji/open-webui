@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { commentSurface, contentHash } from '$lib/components/comments/anchors';
 	import EditPencilIcon from '$lib/components/layout/Sidebar/icons/EditPencil.svelte';
 	import CopyIcon from '$lib/components/layout/Sidebar/icons/Copy.svelte';
 	import TrashIcon from '$lib/components/layout/Sidebar/icons/Trash.svelte';
 	import ChevronRightIcon from '$lib/components/layout/Sidebar/icons/ChevronRight.svelte';
 	import { toast } from 'svelte-sonner';
 	import { tick, getContext, onMount } from 'svelte';
+	import type { Writable } from 'svelte/store';
 
 	import { models, settings } from '$lib/stores';
 	import { contentDirection } from '$lib/i18n/locale';
@@ -19,6 +21,7 @@
 	import equal from 'fast-deep-equal';
 
 	import Name from './Name.svelte';
+	import ContextCompactionLabel from './ContextCompactionLabel.svelte';
 	import ProfileImage from './ProfileImage.svelte';
 	import ProfilePreview from '$lib/components/channel/Messages/Message/ProfilePreview.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -29,11 +32,14 @@
 	import SubagentResultRow from './SubagentResultRow.svelte';
 
 	const i18n = getContext<typeof import('$lib/i18n').default>('i18n');
+	const contextCompactions =
+		getContext<Writable<Record<string, 'in_progress' | { error: string }>>>('contextCompactions');
 	export let user;
 
 	export let chatId;
 	export let history;
 	export let messageId;
+	export let selectedModels: string[] = [];
 
 	export let siblings;
 
@@ -61,9 +67,13 @@
 	let editedFiles = [];
 
 	let messageEditTextAreaElement: HTMLTextAreaElement;
+	let editButtonElement: HTMLButtonElement;
 	let editScrollContainer: HTMLDivElement;
 
 	let message = structuredClone(history.messages[messageId]);
+	$: canBranch = ![...selectedModels, ...(message.models ?? [])].some((id) =>
+		id.startsWith('agent:')
+	);
 	$: authorId = message.user_id || message.user?.id || user?.id;
 	$: author =
 		message.user?.id === authorId
@@ -113,6 +123,7 @@
 	};
 
 	const editMessageConfirmHandler = async (submit = true) => {
+		if (submit && !canBranch) return;
 		if (!editedContent && (editedFiles ?? []).length === 0) {
 			toast.error($i18n.t('Please enter a message or attach a file.'));
 			return;
@@ -125,10 +136,13 @@
 		editedFiles = [];
 	};
 
-	const cancelEditMessage = () => {
+	const cancelEditMessage = async () => {
 		edit = false;
 		editedContent = '';
 		editedFiles = [];
+
+		await tick();
+		editButtonElement?.focus();
 	};
 
 	const deleteMessageHandler = async () => {
@@ -194,6 +208,14 @@
 					<Name>{isOwn && !$settings.showUsername ? $i18n.t('You') : authorName}</Name>
 				{/if}
 			</div>
+		{/if}
+
+		{#if message.contextSummary || $contextCompactions?.[messageId]}
+			<ContextCompactionLabel
+				summary={message.contextSummary}
+				status={$contextCompactions?.[messageId]}
+				{compactPreview}
+			/>
 		{/if}
 
 		<div class="chat-{message.role} w-full min-w-full">
@@ -304,9 +326,10 @@
 
 					<div class="max-h-96 overflow-auto" bind:this={editScrollContainer}>
 						<textarea
+							aria-label={$i18n.t('Message')}
 							id="message-edit-{message.id}"
 							bind:this={messageEditTextAreaElement}
-							class=" bg-transparent outline-hidden focus-visible:outline-none! w-full resize-none text-[0.9375rem]"
+							class=" bg-transparent outline-hidden focus-visible:outline-none! w-full resize-none text-[0.90625rem]"
 							bind:value={editedContent}
 							on:input={(e) => {
 								const messagesContainer = document.getElementById('messages-container');
@@ -360,15 +383,17 @@
 								{$i18n.t('Cancel')}
 							</button>
 
-							<button
-								id="confirm-edit-message-button"
-								class="flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-2.5 text-xs font-normal text-white transition hover:bg-black disabled:opacity-60 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white"
-								on:click={() => {
-									editMessageConfirmHandler();
-								}}
-							>
-								{$i18n.t('Send')}
-							</button>
+							{#if canBranch}
+								<button
+									id="confirm-edit-message-button"
+									class="flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-2.5 text-xs font-normal text-white transition hover:bg-black disabled:opacity-60 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white"
+									on:click={() => {
+										editMessageConfirmHandler();
+									}}
+								>
+									{$i18n.t('Send')}
+								</button>
+							{/if}
 						</div>
 					</div>
 				</div>
@@ -424,7 +449,18 @@
 						>
 							{#if message.content}
 								{#if $settings?.renderMarkdownInUserMessages ?? true}
-									<div class="markdown-prose">
+									<div
+										class="markdown-prose"
+										use:commentSurface={{
+											resource_type: 'chat',
+											resource_id: chatId,
+											target_type: 'chat_message',
+											target_id: message.id,
+											surface_id: 'content',
+											content_hash: contentHash(message.content ?? ''),
+											enabled: !!chatId
+										}}
+									>
 										<Markdown
 											id={`${chatId}-${message.id}`}
 											content={message.content}
@@ -434,7 +470,16 @@
 									</div>
 								{:else}
 									<div
-										class="whitespace-pre-wrap text-[0.9375rem]"
+										class="whitespace-pre-wrap text-[0.90625rem]"
+										use:commentSurface={{
+											resource_type: 'chat',
+											resource_id: chatId,
+											target_type: 'chat_message',
+											target_id: message.id,
+											surface_id: 'content',
+											content_hash: contentHash(message.content ?? ''),
+											enabled: !!chatId
+										}}
 										dir={contentDirection($settings?.chatDirection)}
 									>
 										{message.content}
@@ -481,7 +526,7 @@
 							<div class="flex self-center" dir="ltr">
 								<button
 									aria-label={$i18n.t('Previous message')}
-									class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition"
+									class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition previous-message-button"
 									on:click={() => {
 										showPreviousMessage(message);
 									}}
@@ -494,6 +539,7 @@
 										class="text-sm flex justify-center font-normal self-center dark:text-gray-500 min-w-fit"
 									>
 										<input
+											aria-label={$i18n.t('Message number')}
 											id="message-index-input-{message.id}"
 											type="number"
 											value={siblings.indexOf(message.id) + 1}
@@ -536,7 +582,7 @@
 
 								<button
 									aria-label={$i18n.t('Next message')}
-									class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition"
+									class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition next-message-button"
 									on:click={() => {
 										showNextMessage(message);
 									}}
@@ -546,13 +592,14 @@
 							</div>
 						{/if}
 					{/if}
-					{#if !compactPreview && (!readOnly || (shareMode === 'continue' && ($_user?.role === 'admin' || ($_user?.permissions?.chat?.edit ?? true))))}
+					{#if !compactPreview && (!readOnly || shareMode === 'continue') && ($_user?.role === 'admin' || ($_user?.permissions?.chat?.edit ?? true))}
 						<Tooltip content={$i18n.t('Edit')} placement="bottom">
 							<button
 								class="{($settings?.highContrastMode ?? false)
 									? ''
 									: 'hover-reveal'} inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-gray-400 hover:text-gray-600 transition edit-user-message-button"
 								aria-label={$i18n.t('Edit')}
+								bind:this={editButtonElement}
 								on:click={() => {
 									editMessageHandler();
 								}}
@@ -605,7 +652,7 @@
 							<div class="flex self-center" dir="ltr">
 								<button
 									aria-label={$i18n.t('Previous message')}
-									class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition"
+									class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition previous-message-button"
 									on:click={() => {
 										showPreviousMessage(message);
 									}}
@@ -618,6 +665,7 @@
 										class="text-sm flex justify-center font-normal self-center dark:text-gray-500 min-w-fit"
 									>
 										<input
+											aria-label={$i18n.t('Message number')}
 											id="message-index-input-{message.id}"
 											type="number"
 											value={siblings.indexOf(message.id) + 1}
@@ -660,7 +708,7 @@
 
 								<button
 									aria-label={$i18n.t('Next message')}
-									class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition"
+									class="self-center inline-flex size-7 shrink-0 items-center justify-center p-1.5 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-gray-400 hover:text-gray-600 rounded-md transition next-message-button"
 									on:click={() => {
 										showNextMessage(message);
 									}}

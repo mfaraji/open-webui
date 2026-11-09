@@ -8,6 +8,7 @@
 	const dispatch = createEventDispatcher();
 
 	import { config, models, settings, theme, user } from '$lib/stores';
+	import { setTheme } from '$lib/utils/theme';
 
 	const i18n: any = getContext('i18n');
 
@@ -21,8 +22,8 @@
 	export let getModels: Function;
 
 	// General
-	let themes = ['dark', 'light', 'oled-dark'];
 	let selectedTheme = 'system';
+	$: selectedTheme = $theme;
 
 	let languages: Awaited<ReturnType<typeof getLanguages>> = [];
 	let lang = $i18n.language;
@@ -131,8 +132,6 @@
 	};
 
 	onMount(async () => {
-		selectedTheme = localStorage.theme ?? 'system';
-
 		languages = await getLanguages();
 
 		if (!$config?.features?.enable_easter_eggs) {
@@ -144,62 +143,6 @@
 		params = { ...params, ...$settings.params };
 		params.stop = $settings?.params?.stop ? ($settings?.params?.stop ?? []).join(',') : null;
 	});
-
-	const applyTheme = (_theme: string) => {
-		let themeToApply = _theme === 'oled-dark' ? 'dark' : _theme === 'her' ? 'light' : _theme;
-
-		if (_theme === 'system') {
-			themeToApply = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-		}
-
-		themes
-			.filter((e) => e !== themeToApply)
-			.forEach((e) => {
-				e.split(' ').forEach((e) => {
-					document.documentElement.classList.remove(e);
-				});
-			});
-
-		themeToApply.split(' ').forEach((e) => {
-			document.documentElement.classList.add(e);
-		});
-		document.documentElement.dataset.theme = _theme === 'oled-dark' ? 'oled' : themeToApply;
-
-		const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-		if (metaThemeColor) {
-			if (_theme.includes('system')) {
-				const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-					? 'dark'
-					: 'light';
-				console.log('Setting system meta theme color: ' + systemTheme);
-				metaThemeColor.setAttribute('content', systemTheme === 'light' ? '#FCFAF7' : '#171411');
-			} else {
-				console.log('Setting meta theme color: ' + _theme);
-				metaThemeColor.setAttribute(
-					'content',
-					_theme === 'dark'
-						? '#171411'
-						: _theme === 'oled-dark'
-							? '#000000'
-							: _theme === 'her'
-								? '#983724'
-							: '#FCFAF7'
-				);
-			}
-		}
-
-		if (typeof window !== 'undefined' && window.applyTheme) {
-			window.applyTheme();
-		}
-
-		console.log(_theme);
-	};
-
-	const themeChangeHandler = (_theme: string) => {
-		theme.set(_theme);
-		localStorage.setItem('theme', _theme);
-		applyTheme(_theme);
-	};
 </script>
 
 <div class="flex flex-col h-full justify-between text-sm" id="tab-general">
@@ -220,7 +163,7 @@
 					bind:value={selectedTheme}
 					ariaLabel={$i18n.t('settings.personal.general.theme.label')}
 					placeholder={$i18n.t('Select a theme')}
-					on:change={() => themeChangeHandler(selectedTheme)}
+					on:change={() => setTheme(selectedTheme)}
 				>
 					<option value="system">⚙️ {$i18n.t('System')}</option>
 					<option value="dark">🌑 {$i18n.t('Dark')}</option>
@@ -286,10 +229,12 @@
 				title={$i18n.t('settings.personal.general.sections.advancedParameters.title')}
 			>
 				<UserSettingRow
+					let:labelId
 					description={$i18n.t('settings.personal.general.modelParameters.description')}
 				>
 					<span slot="label">{$i18n.t('settings.personal.general.modelParameters.label')}</span>
 					<button
+						id={`${labelId}-control`}
 						class={actionButtonClass}
 						type="button"
 						aria-expanded={showAdvanced}
