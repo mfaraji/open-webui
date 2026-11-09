@@ -8,12 +8,12 @@
 
 export type TextSegment = { text: string; technical: boolean };
 
-const ARABIC_SCRIPT = /[֐-ࣿיִ-﷿ﹰ-﻿]/;
+const ARABIC_SCRIPT = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
 
 const TECHNICAL = new RegExp(
 	[
 		// URLs
-		String.raw`https?:\/\/[^\s<>"'‌]+`,
+		String.raw`https?:\/\/[^\s<>"'\u200c]+`,
 		// e-mail addresses
 		String.raw`[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+`,
 		// Latin identifiers with internal separators: USD/IRR, gpt-4.1, report-v2.pdf
