@@ -178,7 +178,16 @@ export const resolveLocalizedPromptSuggestions = (
 		if (Array.isArray(prompts)) return prompts;
 	}
 
-	if (fallback) return fallback;
+	// Stored/default suggestions are usually English source strings. Run them through the
+	// translator so stock defaults follow the UI language; custom text has no key and passes
+	// through unchanged (i18next returns the key itself when it is missing).
+	if (fallback) {
+		return fallback.map((prompt) => ({
+			...prompt,
+			title: Array.isArray(prompt.title) ? prompt.title.map((part) => (part ? t(part) : part)) : prompt.title,
+			content: prompt.content ? t(prompt.content) : prompt.content
+		}));
+	}
 
 	// Persian-first starters: short, ready-to-edit requests rather than topic cards. The
 	// source strings are English keys so the translation files stay the single source of truth.

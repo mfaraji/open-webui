@@ -10,7 +10,8 @@
 
 	import { toast } from 'svelte-sonner';
 
-	import { onMount, getContext } from 'svelte';
+	import { onMount, onDestroy, getContext } from 'svelte';
+	import i18next from 'i18next';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
@@ -182,7 +183,17 @@
 
 	let onboarding = false;
 
+	// The login page is always English: we don't know the visitor's preferences
+	// yet. Nothing is persisted; the previous language is restored on leaving.
+	const AUTH_LOCALE = 'en-US';
+	let previousLocale: string | null = null;
+
 	onMount(async () => {
+		if (i18next.language && i18next.language !== AUTH_LOCALE) {
+			previousLocale = i18next.language;
+			await i18next.changeLanguage(AUTH_LOCALE);
+		}
+
 		const redirectPath = $page.url.searchParams.get('redirect');
 		const logout = $page.url.searchParams.get('state') === 'logout';
 
@@ -245,6 +256,10 @@
 		} else {
 			onboarding = $config?.onboarding ?? false;
 		}
+	});
+
+	onDestroy(() => {
+		if (previousLocale) i18next.changeLanguage(previousLocale);
 	});
 </script>
 
