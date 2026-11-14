@@ -602,6 +602,12 @@ except (ValueError, TypeError):
     AIOHTTP_CLIENT_TIMEOUT = 300
 
 # Optional between-chunks idle cap for streaming aiohttp requests.
+# Tool-server connection ids (comma separated) whose MCP apps may call tools flagged
+# `_meta.ui.autoApprove` without the per-call confirmation dialog. Empty = always ask.
+MCP_APP_TRUSTED_SERVERS = {
+    value.strip() for value in os.getenv('MCP_APP_TRUSTED_SERVERS', '').split(',') if value.strip()
+}
+
 AIOHTTP_CLIENT_STREAM_IDLE_TIMEOUT = os.getenv('AIOHTTP_CLIENT_STREAM_IDLE_TIMEOUT', '')
 if AIOHTTP_CLIENT_STREAM_IDLE_TIMEOUT == '':
     AIOHTTP_CLIENT_STREAM_IDLE_TIMEOUT = None

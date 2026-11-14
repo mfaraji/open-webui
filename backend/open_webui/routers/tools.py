@@ -16,6 +16,7 @@ from open_webui.env import (
     AIOHTTP_CLIENT_TIMEOUT,
     ENABLE_TOOL_SERVERS,
     ENABLE_TOOLS,
+    MCP_APP_TRUSTED_SERVERS,
 )
 from open_webui.events import EVENTS, publish_event
 from open_webui.internal.db import get_async_session
@@ -39,7 +40,7 @@ from open_webui.utils.access_control import (
     validate_access_grants,
 )
 from open_webui.utils.auth import get_admin_user, get_verified_user
-from open_webui.utils.mcp.apps import app_csp, ui_resource_uri, verify_app_binding
+from open_webui.utils.mcp.apps import app_csp, auto_approve_tools, ui_resource_uri, verify_app_binding
 from open_webui.utils.mcp.client import tool_visible_to
 from open_webui.utils.misc import is_string_allowed
 from open_webui.utils.plugin import (
@@ -301,6 +302,9 @@ async def mcp_app_rpc(request: Request, id: str, form_data: MCPAppRPCForm, user=
                         'tool': origin,
                         'csp': app_csp(ui),
                         'additional_csp': IFRAME_CSP,
+                        'auto_approve': auto_approve_tools(
+                            server_id, client.tool_definitions, MCP_APP_TRUSTED_SERVERS
+                        ),
                     }
                 if form_data.method == 'tools/call':
                     target = client.tool_definitions.get(params['name'])
