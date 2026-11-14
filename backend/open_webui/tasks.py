@@ -296,6 +296,31 @@ async def get_response_streams_by_chat_id(redis, chat_id: str) -> list[dict]:
     ]
 
 
+async def get_response_stream(redis, task_id: str | None) -> dict | None:
+    """Return one task's in-progress snapshot with its text, or None if there is none."""
+    if not task_id:
+        return None
+    if redis:
+        try:
+            value = await redis.get(f'{REDIS_RESPONSE_STREAMS_KEY}:{task_id}')
+            if value is None:
+                value = await redis.hget(REDIS_RESPONSE_STREAMS_KEY, task_id)
+        except RedisError:
+            return None
+        if not value:
+            return None
+        try:
+            data = load_response_stream(value)
+        except Exception:
+            return None
+    else:
+        data = response_streams.get(task_id)
+        if not data:
+            return None
+    output = data.get('output') or []
+    return {**data, 'output': output, 'content': get_output_text(output)}
+
+
 async def clear_response_stream(redis, task_id: str | None):
     if not task_id:
         return

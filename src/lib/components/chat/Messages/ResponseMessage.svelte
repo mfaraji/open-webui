@@ -77,6 +77,7 @@
 	import { flyAndScale } from '$lib/utils/transitions';
 	import RegenerateMenu from './ResponseMessage/RegenerateMenu.svelte';
 	import StatusHistory from './ResponseMessage/StatusHistory.svelte';
+	import StreamStallNotice from './ResponseMessage/StreamStallNotice.svelte';
 	import FullHeightIframe from '$lib/components/common/FullHeightIframe.svelte';
 	import MCPApp from '$lib/components/chat/Messages/MCPApp.svelte';
 	import OutputEditView from './OutputEditView.svelte';
@@ -992,6 +993,10 @@
 										class="inline-block w-[0.125rem] h-3.5 bg-gray-400 dark:bg-gray-500 ms-0.5 animate-cursor-pulse align-text-bottom"
 									></span>
 								</div>
+							{/if}
+
+							{#if !message.done && !message.error && !compactPreview}
+								<StreamStallNotice messageId={message.id} canStop={!readOnly} />
 							{/if}
 
 							{#if message?.error}

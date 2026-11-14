@@ -179,9 +179,17 @@
 				return;
 			}
 
+			// A persistent pill instead of a toast that disappears while still offline.
 			disconnectWarningShown = true;
-			toast.warning($i18n.t('Connection lost. Reconnecting...'));
 		}, resumeDelay + DISCONNECT_TOAST_DELAY_MS);
+	};
+
+	// Skip socket.io's backoff wait when the page comes back or the network returns;
+	// mobile browsers often resume with a dead socket mid-reply.
+	const reconnectNow = () => {
+		if ($socket && !$socket.connected && localStorage.token) {
+			$socket.connect();
+		}
 	};
 
 	const setupSocket = async (enableWebsocket) => {
@@ -1276,6 +1284,7 @@
 
 			if ($socket && !$socket.connected) {
 				scheduleDisconnectToast();
+				reconnectNow();
 			}
 		};
 
@@ -1291,6 +1300,7 @@
 		document.addEventListener('visibilitychange', handleVisibilityChange);
 		window.addEventListener('pagehide', handlePageHidden);
 		window.addEventListener('pageshow', handlePageVisible);
+		window.addEventListener('online', reconnectNow);
 
 		// Call visibility change handler initially to set state on load
 		handleVisibilityChange();
@@ -1473,6 +1483,7 @@
 			document.removeEventListener('visibilitychange', handleVisibilityChange);
 			window.removeEventListener('pagehide', handlePageHidden);
 			window.removeEventListener('pageshow', handlePageVisible);
+			window.removeEventListener('online', reconnectNow);
 			window.removeEventListener('beforeunload', beforeUnloadHandler);
 			unsubscribeQueueUser();
 		};
@@ -1557,6 +1568,28 @@
 
 {#if $config?.features.enable_community_sharing}
 	<SyncStatsModal bind:show={showSyncStatsModal} eventData={syncStatsEventData} />
+{/if}
+
+{#if disconnectWarningShown && !$socketConnected}
+	<div
+		role="status"
+		aria-live="polite"
+		class="pointer-events-none fixed inset-x-0 top-2 z-[9999] flex justify-center px-4"
+	>
+		<div
+			class="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50/95 px-3 py-1 text-xs text-amber-800 shadow-sm backdrop-blur dark:border-amber-900/60 dark:bg-amber-950/90 dark:text-amber-200"
+		>
+			<span class="size-1.5 shrink-0 animate-pulse rounded-full bg-amber-500"></span>
+			<span>{$i18n.t('Connection lost. Reconnecting...')}</span>
+			<button
+				type="button"
+				class="font-medium underline-offset-2 hover:underline"
+				on:click={reconnectNow}
+			>
+				{$i18n.t('Retry now')}
+			</button>
+		</div>
+	</div>
 {/if}
 
 <div aria-live="polite">

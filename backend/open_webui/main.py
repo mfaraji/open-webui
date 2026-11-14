@@ -216,6 +216,7 @@ from open_webui.socket.main import (
 from open_webui.tasks import (
     cleanup_task,
     create_task,
+    get_response_stream,
     get_response_streams_by_chat_id,
     has_active_tasks,
     list_task_ids_by_item_id,
@@ -1837,11 +1838,23 @@ async def chat_completion(
                     if metadata.get('chat_id') and metadata.get('message_id'):
                         if is_saved_chat_id(metadata['chat_id']):
                             try:
+                                # Keep whatever streamed before the failure (e.g. an upstream
+                                # timeout) instead of saving an empty reply with the error.
+                                partial = await get_response_stream(
+                                    request.app.state.redis,
+                                    metadata.get('task_id') or metadata.get('message_id'),
+                                )
+                                partial_fields = (
+                                    {'content': partial['content'], 'output': partial['output']}
+                                    if partial and partial.get('content')
+                                    else {}
+                                )
                                 await Chats.upsert_message_to_chat_by_id_and_message_id(
                                     metadata['chat_id'],
                                     metadata['message_id'],
                                     {
                                         'parentId': metadata.get('user_message_id'),
+                                        **partial_fields,
                                         'error': {'content': error_detail},
                                         'done': True,
                                         'meta': {'response_ended_at': time.time()},

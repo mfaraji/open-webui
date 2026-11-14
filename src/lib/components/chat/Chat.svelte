@@ -23,6 +23,7 @@
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import { getModels } from '$lib/apis';
 	import equal from 'fast-deep-equal';
+	import { markStreamActivity, registerStreamController } from '$lib/stores/streamActivity';
 
 	import {
 		chatId,
@@ -1623,6 +1624,7 @@
 			}
 			let message = history.messages[event.message_id];
 			if (message) message = { ...message };
+			if (message && !message.done) markStreamActivity(event.message_id);
 
 			if (message || type === 'confirmation' || type === 'input') {
 				const data = event?.data?.data ?? null;
@@ -1981,6 +1983,26 @@
 			if (loaded && $chatId === id) await processNextInQueue(id);
 		}
 	};
+
+	// Watchdog for replies that went silent: reconnect if the socket is down, otherwise
+	// re-run the reconnect sync, which reloads or fails replies whose task is gone.
+	const recoverStalledResponse = async (messageId: string) => {
+		const message = history.messages[messageId];
+		if (!message || message.done) return;
+		if (!$socket?.connected) {
+			$socket?.connect();
+			return;
+		}
+		await handleSocketConnect();
+	};
+
+	onDestroy(
+		registerStreamController({
+			owns: (messageId) => !!history?.messages?.[messageId],
+			stop: (messageId) => stopResponse(true, messageId),
+			recover: recoverStalledResponse
+		})
+	);
 
 	onMount(() => {
 		loading = true;
