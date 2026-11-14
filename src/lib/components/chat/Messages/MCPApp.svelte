@@ -112,9 +112,12 @@
 				extra.mcpReq.signal,
 				AbortSignal.timeout(120000)
 			]);
-			const text = `${app.server_id}: ${name}\n${JSON.stringify(args ?? {}, null, 2)}`;
-			if (!(await requestConfirmation($i18n.t('Tool call'), text, signal)))
-				throw new Error('Tool call cancelled');
+			// Tools the (trusted) server flagged confirm inside the app instead of with this dialog.
+			if (!(resource.auto_approve ?? []).includes(name)) {
+				const text = `${app.server_id}: ${name}\n${JSON.stringify(args ?? {}, null, 2)}`;
+				if (!(await requestConfirmation($i18n.t('Tool call'), text, signal)))
+					throw new Error('Tool call cancelled');
+			}
 			return rpc('tools/call', { name, arguments: args ?? {} }, signal);
 		};
 		bridge.onreadresource = (params, extra) =>

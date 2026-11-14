@@ -44,6 +44,24 @@ def ui_resource_uri(tool: dict) -> str | None:
     return uri if isinstance(uri, str) and uri.startswith('ui://') else None
 
 
+def auto_approve_tools(server_id: str, definitions: dict, trusted_servers) -> list[str]:
+    """Tools an app may call without the host confirmation dialog.
+
+    Needs both the server flagging the tool (`_meta.ui.autoApprove`) and an admin listing the
+    server in MCP_APP_TRUSTED_SERVERS, so a server cannot approve its own tool calls. Only
+    tools callable by apps qualify.
+    """
+    if server_id not in trusted_servers:
+        return []
+    names = []
+    for name, tool in definitions.items():
+        ui = ui_metadata(tool)
+        visibility = ui.get('visibility', ['model', 'app'])
+        if ui.get('autoApprove') is True and isinstance(visibility, list) and 'app' in visibility:
+            names.append(name)
+    return names
+
+
 def app_csp(ui: dict) -> str:
     csp = ui.get('csp') or {}
     if not isinstance(csp, dict):
