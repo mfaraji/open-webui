@@ -657,6 +657,16 @@ html[dir='rtl'] .ProseMirror p {
 	direction: rtl;
 }
 
+/* `unicode-bidi: plaintext` ignores `direction` when a line has no strong character, so an
+   empty line (only the trailing <br>) always put the caret on the left. Drop plaintext for
+   those lines so `direction` applies; it returns as soon as the first character is typed. */
+html[dir='rtl'] .ProseMirror p:has(> br.ProseMirror-trailingBreak:only-child),
+html[dir='rtl'] .ProseMirror p.is-editor-empty {
+	unicode-bidi: normal;
+	direction: rtl;
+	text-align: start;
+}
+
 :focus-visible:not(.ProseMirror):not([contenteditable='true']):not(input):not(textarea),
 .focus-ring:focus-visible {
 	outline: 2px solid var(--ashpazi-focus);
