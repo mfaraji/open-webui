@@ -988,10 +988,17 @@
 							{/if}
 
 							{#if !compactionStatus && !message.done && !message.error && (hasResponseContent || !hasVisibleStatus)}
-								<div class="text-[0.90625rem] leading-relaxed">
-									<span
-										class="inline-block w-[0.125rem] h-3.5 bg-gray-400 dark:bg-gray-500 ms-0.5 animate-cursor-pulse align-text-bottom"
-									></span>
+								<div
+									class="flex items-center gap-1.5 py-2 ps-0.5"
+									role="status"
+									aria-label={$i18n.t('Generating response')}
+								>
+									{#each [0, 1, 2] as i}
+										<span
+											class="size-2 rounded-full bg-gray-800 dark:bg-gray-100 animate-stream-dot motion-reduce:animate-cursor-pulse"
+											style="animation-delay: {i * 0.16}s"
+										></span>
+									{/each}
 								</div>
 							{/if}
 
