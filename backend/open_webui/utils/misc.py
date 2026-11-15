@@ -399,6 +399,11 @@ def merge_tool_call_batches(output: list[dict]) -> list[dict]:
                         'id': calls[0].get('id', batch_id),
                         'call_id': batch_id,
                         **batch['function'],
+                        **{
+                            key: calls[0][key]
+                            for key in ('extra_content', 'provider_specific_fields')
+                            if calls[0].get(key)
+                        },
                         'status': 'completed',
                     }
                 )
@@ -599,6 +604,12 @@ def convert_output_to_messages(
                     'id': item.get('call_id', ''),
                     'type': 'function',
                     'function': get_provider_function(item),
+                    # Gemini thought signatures must be echoed back with the call
+                    **{
+                        key: item[key]
+                        for key in ('extra_content', 'provider_specific_fields')
+                        if item.get(key)
+                    },
                 }
             )
 

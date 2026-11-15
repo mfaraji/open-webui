@@ -5213,6 +5213,9 @@ async def streaming_chat_response_handler(response, ctx):
                                                     response_tool_calls.append(delta_tool_call)
                                                 else:
                                                     # Update the existing tool call
+                                                    for key in ('extra_content', 'provider_specific_fields'):
+                                                        if delta_tool_call.get(key):
+                                                            current_response_tool_call[key] = delta_tool_call[key]
                                                     delta_name = delta_tool_call.get('function', {}).get('name')
                                                     delta_arguments = delta_tool_call.get('function', {}).get(
                                                         'arguments'
@@ -5255,6 +5258,9 @@ async def streaming_chat_response_handler(response, ctx):
                                                     item['name'] = func.get('name', item.get('name', ''))
                                                     item['arguments'] = func.get('arguments', item.get('arguments', ''))
                                                     item['status'] = 'in_progress'
+                                                    for key in ('extra_content', 'provider_specific_fields'):
+                                                        if tc.get(key):
+                                                            item[key] = tc[key]
                                                 else:
                                                     output_index = len(output)
                                                     item = {
@@ -5264,6 +5270,11 @@ async def streaming_chat_response_handler(response, ctx):
                                                         'name': func.get('name', ''),
                                                         'arguments': '',
                                                         'status': 'in_progress',
+                                                        **{
+                                                            key: tc[key]
+                                                            for key in ('extra_content', 'provider_specific_fields')
+                                                            if tc.get(key)
+                                                        },
                                                     }
                                                     output.append(item)
                                                     output_by_call_id[call_id] = (output_index, item)
@@ -5883,6 +5894,9 @@ async def streaming_chat_response_handler(response, ctx):
                             arguments=function.get('arguments', '{}'),
                             status='failed' if error else item.get('status', 'in_progress'),
                         )
+                        for key in ('extra_content', 'provider_specific_fields'):
+                            if tool_call.get(key):
+                                item[key] = tool_call[key]
                         tool = metadata.get('tools', {}).get(item['name'])
                         error = error or (
                             prepare_tool_call(
