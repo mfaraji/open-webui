@@ -435,6 +435,20 @@ def merge_tool_call_batches(output: list[dict]) -> list[dict]:
     return replay
 
 
+# Hidden calls Open WebUI injected itself before the legacy ``synthetic`` flag existed.
+_LEGACY_SYNTHETIC_CALLS = {'recall_memories', 'list_available_skills', 'list_attached_knowledge'}
+
+
+def is_synthetic_call(item: dict) -> bool:
+    """True for tool calls Open WebUI fabricated rather than the model issuing them."""
+    return bool(item.get('synthetic')) or (
+        item.get('hidden') is True
+        and item.get('name') in _LEGACY_SYNTHETIC_CALLS
+        and not item.get('extra_content')
+        and not item.get('provider_specific_fields')
+    )
+
+
 def convert_output_to_messages(
     output: list,
     raw: bool = False,
@@ -474,6 +488,7 @@ def convert_output_to_messages(
     pending_reasoning_details = []
     pending_tool_image_urls = []
     pending_tool_outputs = []
+    synthetic_calls = {}
 
     def flush_pending():
         nonlocal pending_content, pending_tool_calls, pending_reasoning, pending_reasoning_details
@@ -598,6 +613,12 @@ def convert_output_to_messages(
             if not item.get('call_id') or item.get('status') not in {'completed', 'failed', 'rejected'}:
                 continue
 
+            # Never replay a call the model did not make: providers such as Gemini
+            # reject unsigned function calls. Its result is replayed as plain context.
+            if is_synthetic_call(item):
+                synthetic_calls[item['call_id']] = item.get('name', 'tool')
+                continue
+
             # Collect tool calls to batch into assistant message
             pending_tool_calls.append(
                 {
@@ -614,7 +635,15 @@ def convert_output_to_messages(
             )
 
         elif item_type == 'function_call_output':
-            pending_tool_outputs.append(item)
+            if item.get('call_id') in synthetic_calls:
+                name = synthetic_calls[item['call_id']]
+                text = ''.join(
+                    str(part.get('text', '')) for part in item.get('output', []) if part.get('type') == 'input_text'
+                )
+                if text:
+                    pending_content.append(f'<{name}>\n{text}\n</{name}>')
+            else:
+                pending_tool_outputs.append(item)
 
         elif item_type == 'reasoning':
             reasoning_details = item.get('reasoning_details') if raw else None
