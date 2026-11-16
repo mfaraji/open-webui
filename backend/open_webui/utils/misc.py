@@ -641,7 +641,10 @@ def convert_output_to_messages(
                     str(part.get('text', '')) for part in item.get('output', []) if part.get('type') == 'input_text'
                 )
                 if text:
-                    pending_content.append(f'<{name}>\n{text}\n</{name}>')
+                    # A user-role message keeps the request from ending on a model turn.
+                    flush_tool_outputs()
+                    flush_pending()
+                    messages.append({'role': 'user', 'content': f'<{name}>\n{text}\n</{name}>'})
             else:
                 pending_tool_outputs.append(item)
 

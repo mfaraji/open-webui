@@ -17,7 +17,7 @@ def test_synthetic_call_not_replayed_as_tool_call():
     msgs = convert_output_to_messages([_call('a', 'recall_memories', hidden=True, synthetic=True), _out('a', 'likes tea')])
     assert not _calls(msgs)
     assert not any(m['role'] == 'tool' for m in msgs)
-    assert 'likes tea' in msgs[0]['content']
+    assert msgs[-1] == {'role': 'user', 'content': '<recall_memories>\nlikes tea\n</recall_memories>'}
 
 
 def test_legacy_saved_hidden_call_also_skipped():
